@@ -1,0 +1,133 @@
+:root {
+  --bg: #131019;
+  --bg-panel: #1b1724;
+  --bg-panel-alt: #221d2e;
+  --bg-inset: #0f0c15;
+  --border: #34293f;
+  --border-soft: #2a2233;
+  --text: #ece6f5;
+  --text-dim: #9c8fb3;
+  --text-faint: #6c6180;
+  --accent-arcane: #9b6bf2;
+  --accent-arcane-dim: #5b4a7a;
+  --accent-ember: #e2593f;
+  --accent-gold: #d3a24d;
+  --font-display: Iowan Old Style, "Palatino Linotype", Georgia, serif;
+  --font-body: -apple-system, "Segoe UI", Inter, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.4;
+  background-image:
+    radial-gradient(ellipse at top left, rgba(155,107,242,0.08), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(226,89,63,0.06), transparent 55%);
+  min-height: 100vh;
+}
+
+.wrap { max-width: 1720px; margin: 0 auto; padding: 28px 32px 80px; }
+.wrap-estreito { max-width: 640px; margin: 0 auto; padding: 48px 24px 80px; }
+.layout-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 18px; align-items: start; }
+.layout-col { display: flex; flex-direction: column; gap: 18px; }
+
+@media (max-width: 1080px) {
+  .layout-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- Cabeçalhos e Masthead ---------- */
+header.masthead {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px;
+  flex-wrap: wrap; gap: 10px;
+}
+.masthead-title {
+  font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 0.06em;
+  color: var(--text); font-weight: 600;
+}
+.masthead-title span { color: var(--accent-arcane); }
+.masthead-sub { font-size: 0.75rem; color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+.masthead-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- Painéis e Formulários ---------- */
+.panel {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px; margin-bottom: 18px;
+}
+.panel-title {
+  font-family: var(--font-display); font-size: 1.05rem; color: var(--accent-gold);
+  letter-spacing: 0.04em; margin: 0 0 16px; display: flex; align-items: center; gap: 10px;
+}
+.panel-title::before { content: ""; width: 5px; height: 5px; background: var(--accent-gold); border-radius: 50%; flex-shrink: 0; }
+
+label.field { display: flex; flex-direction: column; gap: 5px; font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+input[type=text], select, input[type=number], textarea {
+  background: var(--bg-inset); border: 1px solid var(--border-soft); color: var(--text);
+  border-radius: 6px; padding: 9px 10px; font-family: var(--font-body); font-size: 0.92rem;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-arcane); outline-offset: 1px; border-color: var(--accent-arcane); }
+
+.btn {
+  background: var(--bg-panel-alt); border: 1px solid var(--border-soft); color: var(--text);
+  padding: 9px 16px; border-radius: 7px; font-size: 0.82rem; cursor: pointer; font-family: var(--font-body);
+}
+.btn:hover { border-color: var(--accent-arcane); }
+.btn.primary { background: var(--accent-arcane-dim); border-color: var(--accent-arcane); }
+.btn.small { padding: 6px 12px; font-size: 0.76rem; }
+.btn.danger:hover { border-color: var(--accent-ember); color: var(--accent-ember); }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--text-dim);
+  background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: 20px; padding: 6px 14px;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; }
+.status-pill.online .status-dot { background: #4fd57a; box-shadow: 0 0 6px #4fd57a; }
+.status-pill.offline .status-dot { background: var(--accent-ember); }
+.link-discreto { font-size: 0.76rem; color: var(--text-faint); text-decoration: none; border-bottom: 1px dotted var(--border-soft); }
+.link-discreto:hover { color: var(--accent-arcane); border-color: var(--accent-arcane); }
+
+/* ---------- Modais ---------- */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(8,6,12,0.72);
+  align-items: center; justify-content: center; z-index: 100; padding: 20px;
+}
+.modal-overlay.aberto { display: flex; }
+.modal-panel {
+  background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
+  width: 100%; max-width: 520px; max-height: 80vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid var(--border-soft); flex-shrink: 0; }
+.modal-close {
+  background: none; border: 1px solid var(--border-soft); color: var(--text-faint);
+  border-radius: 6px; width: 28px; height: 28px; font-size: 1.1rem; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { border-color: var(--accent-ember); color: var(--accent-ember); }
+.modal-body { padding: 14px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.modal-footer { padding: 14px 20px 18px; border-top: 1px solid var(--border-soft); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+/* ---------- Barras de Vida e Proteção ---------- */
+.bar-track, .vital-bar-track { background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: 8px; height: 26px; overflow: hidden; position: relative; }
+.bar-fill, .vital-bar-fill { height: 100%; transition: width 0.2s ease; }
+.bar-fill.vida, .vital-bar-fill.vida { background: linear-gradient(90deg, #3f9142, #6fbf73); }
+.bar-fill.protecao, .vital-bar-fill.protecao { background: repeating-linear-gradient(135deg, #4d9eea, #4d9eea 6px, #3b7fc4 6px, #3b7fc4 12px); }
+.vital-numeros { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-family: var(--font-mono); color: var(--text); text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+
+/* ---------- Toasts de Notificação ---------- */
+#roll-log, #toast-rolagens {
+  position: fixed; bottom: 20px; right: 20px; max-width: 320px; z-index: 50;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.roll-toast, .rolagem-toast {
+  background: var(--bg-panel); border: 1px solid var(--accent-arcane); border-radius: 8px;
+  padding: 12px 14px; font-size: 0.82rem; box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  animation: toastIn 0.2s ease-out;
+}
+.roll-toast .rt-title, .rolagem-toast .rt-personagem { color: var(--accent-gold); font-weight: 600; margin-bottom: 2px; font-family: var(--font-display); }
+.roll-toast .rt-total, .rolagem-toast .rt-total { font-family: var(--font-mono); font-size: 1.3rem; color: var(--text); }
+.roll-toast .rt-breakdown { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-faint); margin-top: 3px; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }

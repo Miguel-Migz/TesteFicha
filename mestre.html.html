@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C.A.O.S — Painel do Mestre</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; align-items: stretch; }
+    @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    .mesa-ativa-bar { display: flex; align-items: center; justify-content: space-between; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    .personagens-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+    .pcard { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .turnos-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; flex: 1; }
+    .turnos-col { display: flex; flex-direction: column; background: var(--bg-inset); border: 1px solid var(--border-soft); border-radius: 8px; padding: 12px; }
+    .iniciativa-item { display: flex; align-items: center; gap: 8px; background: var(--bg-panel-alt); border: 2px solid var(--border-soft); border-radius: 8px; padding: 8px 10px; }
+    .iniciativa-item.turno-ativo { border-color: #4fd57a; box-shadow: 0 0 10px rgba(79,213,122,0.45); }
+    .inimigo-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; cursor: pointer; }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="./firebase-config.js"></script>
+</head>
+<body>
+
+<div id="tela-inicial" class="wrap-estreito">
+  <header class="masthead" style="border-bottom:none; margin-bottom:24px;">
+    <div>
+      <div class="masthead-title">C.<span>A</span>.O.S — Painel do Mestre</div>
+      <div class="masthead-sub">Escolha, crie ou entre em uma mesa</div>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2 class="panel-title">Mesas salvas neste navegador</h2>
+    <div id="lista-mesas-salvas"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">Criar Nova Mesa</h2>
+    <div style="display: flex; gap: 10px; align-items: flex-end;">
+      <label class="field" style="flex:1;">Nome da mesa
+        <input type="text" id="input-nome-mesa" placeholder="Ex: Campanha Principal">
+      </label>
+      <button class="btn primary" id="btn-criar-mesa">Criar Mesa</button>
+    </div>
+  </section>
+</div>
+
+<div id="dashboard" class="wrap" style="display:none">
+  <header class="masthead">
+    <div>
+      <div class="masthead-title">C.<span>A</span>.O.S — Painel do Mestre</div>
+      <div class="masthead-sub">Visão em tempo real</div>
+    </div>
+    <div class="masthead-actions">
+      <span class="status-pill online"><span class="status-dot"></span><span>Conectado</span></span>
+      <a class="link-discreto" href="./caos-ficha-modulo1.html">Voltar pra ficha →</a>
+    </div>
+  </header>
+
+  <div class="mesa-ativa-bar">
+    <div>
+      <div style="font-family: var(--font-display); font-size: 1.25rem;" id="mesa-ativa-nome">—</div>
+      <div style="font-size: 0.78rem; color: var(--text-faint); font-family: var(--font-mono);">Código: <b id="mesa-ativa-id" style="color:var(--accent-gold);"></b></div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn small" id="btn-copiar-codigo">Copiar Convite</button>
+      <button class="btn small" id="btn-trocar-mesa">Trocar de Mesa</button>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div>
+      <div id="conteudo"><div class="empty-state">Aguardando jogadores...</div></div>
+    </div>
+
+    <div>
+      <section class="panel" style="min-height: 500px;">
+        <div style="display: flex; gap: 6px; border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; margin-bottom: 16px;">
+          <button class="btn small active" id="tab-turnos">Turnos</button>
+          <button class="btn small" id="tab-fichas">Fichas</button>
+        </div>
+
+        <div id="painel-turnos" class="turnos-grid">
+          <div class="turnos-col">
+            <div style="font-size:0.7rem; text-transform:uppercase; color:var(--text-faint); text-align:center; margin-bottom:10px;">Iniciativa</div>
+            <div id="iniciativa-lista" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const LS_MESAS = "caos_mestre_mesas";
+  let mesaAtiva = null;
+
+  function listarMesas(){
+    try { return JSON.parse(localStorage.getItem(LS_MESAS)) || []; } catch(e) { return []; }
+  }
+
+  function mostrarDashboard(mesa){
+    mesaAtiva = mesa;
+    document.getElementById("mesa-ativa-nome").textContent = mesa.nome;
+    document.getElementById("mesa-ativa-id").textContent = mesa.id;
+    document.getElementById("tela-inicial").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    if(firebaseOk) escutarJogadoresDaMesa(mesa.id, renderJogadores);
+  }
+
+  function renderJogadores(dados){
+    const container = document.getElementById("conteudo");
+    if(!dados){ container.innerHTML = "<div class='empty-state'>Nenhum jogador na mesa.</div>"; return; }
+    container.innerHTML = "";
+    Object.keys(dados).forEach(id => {
+      const p = dados[id];
+      const card = document.createElement("div");
+      card.className = "pcard";
+      card.innerHTML = `
+        <div style="font-weight:600; font-family:var(--font-display);">${p.identidade.nome || "Sem nome"}</div>
+        <div class="vital-bar-track"><div class="vital-bar-fill vida" style="width:${(p.recursos.pvAtual/p.recursos.pvMaximo)*100}%"></div><div class="vital-numeros">Vida: ${p.recursos.pvAtual}/${p.recursos.pvMaximo}</div></div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  document.getElementById("btn-criar-mesa").addEventListener("click", ()=>{
+    const nome = document.getElementById("input-nome-mesa").value.trim();
+    if(!nome) return;
+    criarNovaMesa(nome).then(idMesa => {
+      const mesa = { id: idMesa, nome, criadoEm: Date.now() };
+      const lista = listarMesas();
+      lista.unshift(mesa);
+      localStorage.setItem(LS_MESAS, JSON.stringify(lista));
+      mostrarDashboard(mesa);
+    });
+  });
+
+  document.getElementById("btn-trocar-mesa").addEventListener("click", ()=>{
+    document.getElementById("tela-inicial").style.display = "block";
+    document.getElementById("dashboard").style.display = "none";
+  });
+})();
+</script>
+</body>
+</html>

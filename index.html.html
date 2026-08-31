@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C.A.O.S — Projeto da Ficha de Personagem</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+  #landing { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+  .cards { display:flex; flex-direction:column; gap:14px; margin-top:24px; }
+  a.card {
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:10px;
+    padding:20px 22px; text-decoration:none; color:var(--text);
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  a.card:hover { border-color:var(--accent-arcane); background:var(--bg-panel-alt); }
+  .card-title { font-family:var(--font-display); font-size:1.15rem; color:var(--accent-gold); margin-bottom:4px; }
+  .card-desc { font-size:0.84rem; color:var(--text-dim); }
+  .card-arrow { font-size:1.3rem; color:var(--text-faint); }
+  #ficha-view { display:none; flex-direction:column; height:100vh; }
+  body.mostrando-ficha #landing { display:none; }
+  body.mostrando-ficha #ficha-view { display:flex; }
+  .ficha-topbar { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--bg-panel); border-bottom:1px solid var(--border); }
+  #ficha-frame { flex:1; width:100%; border:none; background:var(--bg); }
+</style>
+
+<!-- Scripts Firebase Compat compartilhados -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="./firebase-config.js"></script>
+</head>
+<body>
+
+<div id="landing">
+<div class="wrap-estreito">
+  <header style="margin-bottom:28px; border-bottom:1px solid var(--border); padding-bottom:16px;">
+    <div class="masthead-title" style="font-size:2rem;">C.<span>A</span>.O.S</div>
+    <div class="masthead-sub">Ficha de Personagem Automatizada — Hub do Projeto</div>
+    <div class="status-pill online" style="margin-top:14px;" id="firebase-badge">🔥 Firebase Conectado</div>
+  </header>
+
+  <div class="cards">
+    <a class="card" href="#" id="btn-abrir-ficha">
+      <div>
+        <div class="card-title">Abrir Ficha de Personagem</div>
+        <div class="card-desc">Identidade, Status Vitais, Atributos, Perícias, Habilidades e Inventário.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a class="card" href="./mestre.html">
+      <div>
+        <div class="card-title">Painel do Mestre</div>
+        <div class="card-desc">Visão em tempo real das mesas ativas, rastreador de turnos e combate.</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+
+  <p style="margin-top:32px; font-size:0.72rem; color:var(--text-faint); text-align:center;">Sistema autoral C.A.O.S</p>
+</div>
+</div>
+
+<div id="ficha-view">
+  <div class="ficha-topbar">
+    <button class="btn small" id="btn-voltar">← Voltar</button>
+    <span style="font-family:var(--font-display); font-size:0.95rem; color:var(--text-dim);">C.A.O.S — Ficha de Personagem</span>
+  </div>
+  <iframe id="ficha-frame" title="Ficha de Personagem"></iframe>
+</div>
+
+<script>
+  const body = document.body;
+  const frame = document.getElementById("ficha-frame");
+  let carregada = false;
+
+  document.getElementById("btn-abrir-ficha").addEventListener("click", (e) => {
+    e.preventDefault();
+    if(!carregada){
+      frame.src = "./caos-ficha-modulo1.html";
+      carregada = true;
+    }
+    body.classList.add("mostrando-ficha");
+  });
+
+  document.getElementById("btn-voltar").addEventListener("click", () => {
+    body.classList.remove("mostrando-ficha");
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C.A.O.S — Ficha de Personagem</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .id-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; }
+    .identidade-corpo { display: grid; grid-template-columns: auto 2.2fr 1fr 1fr; align-items: stretch; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-soft); }
+    .identidade-col { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; padding: 0 20px; border-left: 1px solid var(--border-soft); }
+    .identidade-col-avatar { border-left: none; padding-left: 0; align-items: center; justify-content: center; }
+    .avatar-circle { width: 160px; height: 160px; border-radius: 50%; background: var(--bg-inset); border: 2px solid var(--border-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .vitals-grid { display: grid; grid-template-columns: 1.6fr 1fr; grid-auto-rows: 1fr; gap: 12px; }
+    .vital-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .vital-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .vital-inputs input { width: 52px; text-align: center; font-family: var(--font-mono); font-size: 0.95rem; padding: 6px 4px; }
+    .dc-btn { background: var(--bg-inset); border: 1px solid var(--border-soft); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 0.74rem; cursor: pointer; }
+    .dc-btn.dano { border-color: var(--accent-ember); color: var(--accent-ember); }
+    .dc-btn.cura { border-color: #6fbf73; color: #6fbf73; }
+    .derived-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .derived-card input { width: 88px; text-align: center; font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; color: var(--accent-gold); }
+    .attr-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .attr-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 8px 4px; text-align: center; }
+    .attr-card.fisica { border-top: 2px solid var(--accent-ember); }
+    .attr-card.mental { border-top: 2px solid var(--accent-arcane); }
+    .tabbar { display: flex; align-items: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-btn { background: transparent; border: 1px solid transparent; color: var(--text-faint); font-size: 0.74rem; text-transform: uppercase; font-weight: 600; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
+    .tab-btn.active { color: var(--text); border-color: var(--text); background: var(--bg-inset); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .pericia-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 10px; align-items: center; padding: 8px 6px; border-radius: 6px; font-size: 0.86rem; }
+    .pericia-row:hover { background: var(--bg-panel-alt); }
+    .toggle { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--text-dim); cursor: pointer; }
+    .formula { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-gold); min-width: 110px; text-align: right; }
+    .roll-btn { background: var(--accent-arcane-dim); border: 1px solid var(--accent-arcane); color: var(--text); border-radius: 6px; padding: 6px 12px; font-size: 0.76rem; cursor: pointer; }
+    .actions { position: sticky; bottom: 0; display: flex; gap: 10px; justify-content: flex-end; padding: 14px 0 4px; }
+    .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .crop-viewport { width: 260px; height: 260px; border-radius: 50%; overflow: hidden; position: relative; background: var(--bg-inset); border: 2px solid var(--accent-arcane); margin: 4px auto 0; cursor: grab; }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  <script src="./firebase-config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div>
+      <div class="masthead-title">C.<span>A</span>.O.S</div>
+      <div class="masthead-sub">Ficha de Personagem — Módulo Automatizado</div>
+    </div>
+    <div class="masthead-actions">
+      <button class="btn" id="btn-historico">Histórico</button>
+      <button class="btn" id="btn-personagens">Personagens</button>
+    </div>
+  </header>
+
+  <!-- Mesa Conexão -->
+  <section class="panel" style="padding: 14px 20px;">
+    <div id="mesa-form" style="display: flex; gap: 10px; align-items: flex-end;">
+      <label class="field" style="width: 220px;">ID da Mesa
+        <input type="text" id="f-id-mesa" placeholder="Ex: MESA-8492">
+      </label>
+      <button class="btn primary" id="btn-entrar-mesa">Entrar na Mesa</button>
+    </div>
+    <div id="mesa-status" style="display: none; align-items: center; justify-content: space-between;">
+      <span>Conectado à mesa <b id="mesa-status-id" style="color: var(--accent-gold); font-family: var(--font-mono);"></b></span>
+      <button class="btn" id="btn-sair-mesa">Sair da mesa</button>
+    </div>
+  </section>
+
+  <!-- Modais -->
+  <div class="modal-overlay" id="modal-personagens">
+    <div class="modal-panel">
+      <div class="modal-header"><h2 class="panel-title" style="margin:0">Personagens</h2><button class="modal-close" id="btn-fechar-modal">×</button></div>
+      <div class="modal-body" id="lista-personagens"></div>
+      <div class="modal-footer"><button class="btn primary" id="btn-novo-personagem" style="width: 100%;">+ Novo personagem</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-historico">
+    <div class="modal-panel">
+      <div class="modal-header"><h2 class="panel-title" style="margin:0">Histórico de Rolagens</h2><button class="modal-close" id="btn-fechar-historico">×</button></div>
+      <div class="modal-body" id="lista-historico"></div>
+      <div class="modal-footer"><button class="btn" id="btn-limpar-historico">Limpar histórico</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-editar-foto">
+    <div class="modal-panel" style="max-width:360px;">
+      <div class="modal-header"><h2 class="panel-title" style="margin:0">Recortar Foto</h2><button class="modal-close" id="btn-fechar-crop">×</button></div>
+      <div class="modal-body" style="align-items: center;">
+        <div class="crop-viewport" id="crop-viewport"><img id="crop-image" style="position: absolute; top:50%; left:50%; max-width:none;" alt=""></div>
+        <input type="range" id="crop-zoom-slider" min="100" max="300" value="100" style="width: 100%; margin-top: 14px; accent-color: var(--accent-arcane);">
+      </div>
+      <div class="modal-footer"><button class="btn primary" id="btn-aplicar-crop">Aplicar</button></div>
+    </div>
+  </div>
+
+  <!-- Layout Principal -->
+  <div class="layout-grid">
+    <!-- Coluna Esquerda: Abas -->
+    <div class="layout-col">
+      <section class="panel">
+        <div class="tabbar" id="tabbar">
+          <button class="tab-btn active" data-tab="pericias">Perícias</button>
+          <button class="tab-btn" data-tab="inventario">Inventário</button>
+          <button class="tab-btn" data-tab="habilidades">Habilidades</button>
+          <button class="tab-btn" data-tab="tecnicas">Técnicas</button>
+          <button class="tab-btn" data-tab="talentos">Talentos</button>
+          <button class="tab-btn" data-tab="atalhos">Atalhos</button>
+          <button class="tab-btn" data-tab="anotacoes">Anotações</button>
+        </div>
+
+        <div class="tab-content active" data-tab-content="pericias">
+          <div style="font-size:0.72rem; color:var(--text-faint); margin:0 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">FÍSICAS</div>
+          <div id="pericias-fisicas"></div>
+          <div style="font-size:0.72rem; color:var(--text-faint); margin:16px 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">MENTAIS</div>
+          <div id="pericias-mentais"></div>
+          <div style="font-size:0.72rem; color:var(--text-faint); margin:16px 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">OFÍCIO</div>
+          <div id="pericias-oficio"></div>
+        </div>
+
+        <div class="tab-content" data-tab-content="inventario"><div class="item-grid" id="item-grid"></div></div>
+        <div class="tab-content" data-tab-content="habilidades"><div class="item-grid" id="hab-grid"></div></div>
+        <div class="tab-content" data-tab-content="tecnicas"><div style="display:flex; flex-direction:column; gap:10px;" id="tecnica-grid"></div></div>
+        <div class="tab-content" data-tab-content="talentos"><div class="item-grid" id="talento-grid"></div></div>
+        <div class="tab-content" data-tab-content="atalhos"><div style="display:flex; flex-direction:column; gap:10px;" id="atalho-grid"></div></div>
+        <div class="tab-content" data-tab-content="anotacoes">
+          <div style="display:grid; grid-template-columns:1fr 1.6fr; gap:14px; height:460px;">
+            <div style="background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; padding:12px; display:flex; flex-direction:column;">
+              <button class="btn small primary" id="btn-nova-anotacao" style="margin-bottom:10px;">+ Nova nota</button>
+              <div id="anotacoes-lista" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+            <div style="background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; display:flex; flex-direction:column; overflow:hidden;">
+              <input type="text" id="anotacao-titulo-input" style="background:transparent; border:none; border-bottom:1px solid var(--border-soft); color:var(--text); font-family:var(--font-display); font-size:1.05rem; padding:14px 16px 10px;" placeholder="Título da nota">
+              <textarea id="anotacao-conteudo-input" style="flex:1; background:transparent; border:none; color:var(--text); padding:12px 16px; resize:none;" placeholder="Escreva aqui..."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Coluna Direita: Identidade / Vitais / Atributos -->
+    <div class="layout-col">
+      <section class="panel">
+        <h2 class="panel-title">Identidade</h2>
+        <div class="id-grid">
+          <label class="field">Nome<input type="text" id="f-nome"></label>
+          <label class="field">Classe<select id="f-classe"><option>Sicário</option><option>Mandrake</option><option>Baluarte</option><option>Valhacouto</option></select></label>
+          <label class="field">Subclasse<select id="f-subclasse"><option>Arcanista</option><option>Dizimador</option><option>Colosso</option><option>Protetor</option></select></label>
+        </div>
+        <div class="identidade-corpo">
+          <div class="identidade-col identidade-col-avatar">
+            <div class="avatar-circle" id="avatar-circle">
+              <img id="avatar-img" style="display:none;" alt="">
+              <span id="avatar-placeholder" style="font-size:0.78rem; color:var(--text-faint);">+ Foto</span>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none;">
+            <button id="avatar-remove" style="background:none; border:none; color:var(--text-faint); font-size:0.66rem; cursor:pointer; text-decoration:underline; display:none;">Remover</button>
+          </div>
+          <div class="identidade-col">
+            <label class="field">Antecedente<input type="text" id="f-antecedente"></label>
+            <label class="field">Ofício
+              <select id="f-oficio">
+                <option value="">— nenhum —</option><option>Alquimia</option><option>Arte da Guerra</option><option>Ferraria</option><option>Carpintaria</option><option>Culinária</option><option>Herborismo</option><option>Engenharia</option>
+              </select>
+            </label>
+          </div>
+          <div class="identidade-col">
+            <label class="field">Proficiência<input type="number" id="f-proficiencia" min="0" max="20" value="1"></label>
+            <label class="field">Nível<input type="number" id="f-nivel" min="1" max="20" value="1"></label>
+          </div>
+          <div class="identidade-col">
+            <label class="field">Cansaço<input type="number" id="f-cansaco" min="0" value="0"></label>
+            <label class="field">Exaustão<input type="number" id="f-exaustao" min="0" value="0"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Status Vitais e Combate</h2>
+        <div class="vitals-grid">
+          <div class="vital-card">
+            <div class="vital-top-row">
+              <span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim);">Vida</span>
+              <div class="vital-inputs"><input type="number" id="v-pv-atual"> / <input type="number" id="v-pv-max"></div>
+              <div style="display:flex; gap:5px;">
+                <input type="number" id="v-pv-delta" style="width:44px; text-align:center;" placeholder="Qtd">
+                <button class="dc-btn dano" data-vital="pv" data-sinal="-1">Dano</button>
+                <button class="dc-btn cura" data-vital="pv" data-sinal="1">Cura</button>
+              </div>
+            </div>
+            <div class="bar-track"><div class="bar-fill vida" id="v-pv-bar" style="width:100%;"></div></div>
+          </div>
+          <div class="derived-card"><span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px;">DT</span><input type="text" id="v-dt"></div>
+          <div class="vital-card">
+            <div class="vital-top-row">
+              <span style="font-size:0.72rem; text-transform:uppercase; color:var(--accent-arcane);">Proteção</span>
+              <div class="vital-inputs"><input type="number" id="v-prot-atual"> / <input type="number" id="v-prot-max"></div>
+              <div style="display:flex; gap:5px;">
+                <input type="number" id="v-prot-delta" style="width:44px; text-align:center;" placeholder="Qtd">
+                <button class="dc-btn dano" data-vital="prot" data-sinal="-1">Dano</button>
+                <button class="dc-btn cura" data-vital="prot" data-sinal="1">Cura</button>
+              </div>
+            </div>
+            <div class="bar-track"><div class="bar-fill protecao" id="v-prot-bar" style="width:100%;"></div></div>
+          </div>
+          <div class="derived-card"><span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px;">Deslocamento</span><input type="text" id="v-desloc-input"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Atributos</h2>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+          <button class="btn small" id="btn-modo-atributo">Modo: Permanente</button>
+          <button id="btn-limpar-temp" style="background:none; border:none; color:var(--text-faint); font-size:0.72rem; cursor:pointer; text-decoration:underline; display:none;">Limpar temporários</button>
+        </div>
+        <div class="attr-grid" id="attr-grid"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="actions">
+    <span id="save-indicator" style="font-size:0.72rem; color:var(--text-faint); margin-right:auto; align-self:center;">salvo automaticamente</span>
+    <span id="sync-indicator" style="font-size:0.72rem; color:var(--text-faint); align-self:center;"></span>
+    <button class="btn" id="btn-reset">Resetar ficha</button>
+    <button class="btn" id="btn-import">Importar JSON</button>
+    <input type="file" id="import-input" accept="application/json" style="display:none;">
+    <button class="btn primary" id="btn-export">Exportar JSON</button>
+  </div>
+</div>
+
+<div id="roll-log"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const ATRIBUTOS_DEF = [
+    { chave:"forca", nome:"Força", categoria:"fisica" },
+    { chave:"agilidade", nome:"Agilidade", categoria:"fisica" },
+    { chave:"vigor", nome:"Vigor", categoria:"fisica" },
+    { chave:"mente", nome:"Mente", categoria:"mental" },
+    { chave:"influencia", nome:"Influência", categoria:"mental" },
+    { chave:"instinto", nome:"Instinto", categoria:"mental" },
+  ];
+
+  const PERICIAS_DEF = {
+    fisicas: [
+      { nome:"Atletismo", atributoBase:"forca" }, { nome:"Acrobacia", atributoBase:"agilidade" },
+      { nome:"Furtividade", atributoBase:"agilidade" }, { nome:"Crime", atributoBase:"agilidade" },
+      { nome:"Reflexos", atributoBase:"agilidade" }, { nome:"Prestidigitação", atributoBase:"agilidade" },
+      { nome:"Pilotagem", atributoBase:"agilidade" }, { nome:"Concentração", atributoBase:"vigor" },
+      { nome:"Fortitude", atributoBase:"vigor" },
+    ],
+    mentais: [
+      { nome:"Arcanismo", atributoBase:"mente" }, { nome:"Medicina", atributoBase:"mente" },
+      { nome:"História", atributoBase:"mente" }, { nome:"Investigação", atributoBase:"mente" },
+      { nome:"Natureza", atributoBase:"mente" }, { nome:"Táticas", atributoBase:"mente" },
+      { nome:"Vontade", atributoBase:"mente" }, { nome:"Religião", atributoBase:"mente" },
+      { nome:"Avaliação", atributoBase:"instinto" }, { nome:"Observar", atributoBase:"instinto" },
+      { nome:"Ouvir", atributoBase:"instinto" }, { nome:"Procurar", atributoBase:"instinto" },
+      { nome:"Sentir", atributoBase:"instinto" }, { nome:"Intuição", atributoBase:"instinto" },
+      { nome:"Atuação", atributoBase:"influencia" }, { nome:"Intimidação", atributoBase:"influencia" },
+      { nome:"Persuasão", atributoBase:"influencia" }, { nome:"Sedução", atributoBase:"influencia" },
+      { nome:"Eloquência", atributoBase:"influencia" },
+    ]
+  };
+
+  const LOCALSTORAGE_PREFIX = "caos_ficha_";
+  const LAST_ACTIVE_KEY = "caos_ultimo_personagem_id";
+  const SESSION_KEY = "personagem_ativo_id";
+
+  let aplicandoAtualizacaoRemota = false;
+  let modoAtributoTemporario = false;
+  let pararEscutaMesa = null;
+
+  function estadoPadrao(){
+    const atributos = {};
+    ATRIBUTOS_DEF.forEach(a => atributos[a.chave] = { pontos: 1 });
+    const pericias = { fisicas:[], mentais:[], oficio:{ escolhido:"", isOficio:true } };
+    ["fisicas","mentais"].forEach(cat=>{
+      pericias[cat] = PERICIAS_DEF[cat].map(p => ({ nome:p.nome, atributoBase:p.atributoBase, treinado:false, expert:false }));
+    });
+    return {
+      id: "p" + Date.now() + "_" + Math.floor(Math.random()*10000),
+      atualizadoEm: null,
+      idMesa: null,
+      identidade:{ nome:"", classe:"Sicário", subclasse:"Arcanista", antecedente:"", oficio:"", nivel:1, proficiencia:1, cansaco:0, exaustao:0, foto:null },
+      atributos,
+      pericias,
+      recursos:{ pvAtual:10, pvMaximo:10, protAtual:0, protMaximo:0, dt:"16", deslocamento:"10m" },
+      inventario: [], habilidades: [], talentos: [], tecnicas: [], atalhos: [], historicoRolagens: [], anotacoes: []
+    };
+  }
+
+  function carregarPersonagem(id){
+    try {
+      const raw = localStorage.getItem(LOCALSTORAGE_PREFIX + id);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+
+  let estado = (function(){
+    const id = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(LAST_ACTIVE_KEY);
+    const carregado = id ? carregarPersonagem(id) : null;
+    if(carregado){ sessionStorage.setItem(SESSION_KEY, carregado.id); return carregado; }
+    const novo = estadoPadrao();
+    sessionStorage.setItem(SESSION_KEY, novo.id);
+    return novo;
+  })();
+
+  function salvar(){
+    estado.atualizadoEm = Date.now();
+    localStorage.setItem(LOCALSTORAGE_PREFIX + estado.id, JSON.stringify(estado));
+    localStorage.setItem(LAST_ACTIVE_KEY, estado.id);
+    sessionStorage.setItem(SESSION_KEY, estado.id);
+    document.getElementById("save-indicator").textContent = "salvo " + new Date().toLocaleTimeString("pt-BR");
+    if(firebaseOk && estado.idMesa && !aplicandoAtualizacaoRemota){
+      conectarJogadorMesa(estado.idMesa, estado);
+    }
+  }
+
+  function valorEfetivoAtributo(chave){
+    const a = estado.atributos[chave];
+    return Math.max(0, a.pontos + (a.modTemp || 0));
+  }
+
+  function formulaPericia(pericia){
+    if(pericia.isOficio) return "Automático";
+    const qtd = valorEfetivoAtributo(pericia.atributoBase);
+    const prof = estado.identidade.proficiencia;
+    let f = `${qtd}d10`;
+    if(pericia.treinado) f += pericia.expert ? ` + ${prof*6} (${prof}d6 máx)` : ` + ${prof}d6`;
+    return f;
+  }
+
+  function renderAtributos(){
+    const grid = document.getElementById("attr-grid");
+    grid.innerHTML = "";
+    ATRIBUTOS_DEF.forEach(def => {
+      const base = estado.atributos[def.chave].pontos;
+      const modTemp = estado.atributos[def.chave].modTemp || 0;
+      const efetivo = valorEfetivoAtributo(def.chave);
+      const card = document.createElement("div");
+      card.className = `attr-card ${def.categoria}`;
+      card.innerHTML = `
+        <div style="font-size:0.62rem; text-transform:uppercase; color:var(--text-dim);">${def.nome}</div>
+        <div style="font-family:var(--font-display); font-size:1.25rem; font-weight:600;">${base}${modTemp !== 0 ? ` <span style="font-size:0.85em; color:${modTemp>0?'#4fd57a':'var(--accent-ember)'}">(${efetivo})</span>` : ""}</div>
+        <div style="font-family:var(--font-mono); font-size:0.66rem; color:var(--text-faint);">${efetivo}d10</div>
+        <div style="display:flex; justify-content:center; gap:4px; margin-top:4px;">
+          <button class="btn small" style="padding:2px 8px;" data-attr="${def.chave}" data-step="-1">–</button>
+          <button class="btn small" style="padding:2px 8px;" data-attr="${def.chave}" data-step="1">+</button>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    grid.querySelectorAll("[data-attr]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const chave = btn.dataset.attr;
+        const step = parseInt(btn.dataset.step,10);
+        if(modoAtributoTemporario){
+          estado.atributos[chave].modTemp = Math.max(-10, Math.min(10, (estado.atributos[chave].modTemp || 0) + step));
+        } else {
+          estado.atributos[chave].pontos = Math.max(0, Math.min(10, estado.atributos[chave].pontos + step));
+        }
+        render(); salvar();
+      });
+    });
+  }
+
+  function renderPericias(cat, containerId){
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    estado.pericias[cat].forEach((p, idx)=>{
+      const row = document.createElement("div");
+      row.className = "pericia-row";
+      row.innerHTML = `
+        <div>${p.nome} <span style="font-size:0.66rem; color:var(--text-faint); text-transform:uppercase;">${p.atributoBase}</span></div>
+        <label class="toggle"><input type="checkbox" data-cat="${cat}" data-idx="${idx}" data-field="treinado" ${p.treinado?"checked":""}> Treinado</label>
+        <label class="toggle"><input type="checkbox" data-cat="${cat}" data-idx="${idx}" data-field="expert" ${p.expert?"checked":""} ${!p.treinado?"disabled":""}> Expert</label>
+        <div class="formula">${formulaPericia(p)}</div>
+        <button class="roll-btn" data-cat="${cat}" data-idx="${idx}">Rolar</button>`;
+      container.appendChild(row);
+    });
+
+    container.querySelectorAll("input[type=checkbox]").forEach(chk=>{
+      chk.addEventListener("change", ()=>{
+        const cat = chk.dataset.cat, idx = chk.dataset.idx, field = chk.dataset.field;
+        estado.pericias[cat][idx][field] = chk.checked;
+        if(field === "treinado" && !chk.checked) estado.pericias[cat][idx].expert = false;
+        render(); salvar();
+      });
+    });
+
+    container.querySelectorAll(".roll-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const p = estado.pericias[btn.dataset.cat][btn.dataset.idx];
+        const qtd = valorEfetivoAtributo(p.atributoBase);
+        const prof = estado.identidade.proficiencia;
+        const d10s = Array.from({length: Math.max(qtd,0)}, () => 1 + Math.floor(Math.random()*10));
+        let d6s = [], bonus = 0;
+        if(p.treinado){
+          if(p.expert) bonus = prof * 6;
+          else d6s = Array.from({length: Math.max(prof,0)}, () => 1 + Math.floor(Math.random()*6));
+        }
+        const total = d10s.reduce((a,b)=>a+b,0) + d6s.reduce((a,b)=>a+b,0) + bonus;
+        mostrarToast(p.nome, total, `${formulaPericia(p)} → d10:[${d10s.join(", ")}] ${d6s.length?"d6:["+d6s.join(", ")+"]":""}`);
+      });
+    });
+  }
+
+  function mostrarToast(nome, total, formula){
+    const log = document.getElementById("roll-log");
+    const toast = document.createElement("div");
+    toast.className = "roll-toast";
+    toast.innerHTML = `<div class="rt-title">${nome}</div><div class="rt-total">${total}</div><div class="rt-breakdown">${formula}</div>`;
+    log.appendChild(toast);
+    setTimeout(()=> toast.remove(), 6000);
+  }
+
+  function render(){
+    document.getElementById("f-nome").value = estado.identidade.nome;
+    document.getElementById("f-classe").value = estado.identidade.classe;
+    document.getElementById("f-subclasse").value = estado.identidade.subclasse;
+    document.getElementById("f-antecedente").value = estado.identidade.antecedente;
+    document.getElementById("f-oficio").value = estado.identidade.oficio;
+    document.getElementById("f-nivel").value = estado.identidade.nivel;
+    document.getElementById("f-proficiencia").value = estado.identidade.proficiencia;
+    document.getElementById("f-cansaco").value = estado.identidade.cansaco;
+    document.getElementById("f-exaustao").value = estado.identidade.exaustao;
+
+    const r = estado.recursos;
+    document.getElementById("v-pv-atual").value = r.pvAtual;
+    document.getElementById("v-pv-max").value = r.pvMaximo;
+    document.getElementById("v-pv-bar").style.width = (r.pvMaximo > 0 ? (r.pvAtual/r.pvMaximo)*100 : 0) + "%";
+    document.getElementById("v-prot-atual").value = r.protAtual;
+    document.getElementById("v-prot-max").value = r.protMaximo;
+    document.getElementById("v-prot-bar").style.width = (r.protMaximo > 0 ? (r.protAtual/r.protMaximo)*100 : 0) + "%";
+    document.getElementById("v-dt").value = r.dt;
+    document.getElementById("v-desloc-input").value = r.deslocamento;
+
+    renderAtributos();
+    renderPericias("fisicas", "pericias-fisicas");
+    renderPericias("mentais", "pericias-mentais");
+  }
+
+  // Eventos de inputs de texto/números
+  ["f-nome","f-classe","f-subclasse","f-antecedente","f-oficio"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", (e)=>{
+      const campo = id.replace("f-","");
+      estado.identidade[campo] = e.target.value;
+      salvar();
+    });
+  });
+
+  document.querySelectorAll("#tabbar .tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const alvo = btn.dataset.tab;
+      document.querySelectorAll("#tabbar .tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".tab-content").forEach(panel => panel.classList.toggle("active", panel.dataset.tabContent === alvo));
+    });
+  });
+
+  render();
+  salvar();
+})();
+</script>
+</body>
+</html>
