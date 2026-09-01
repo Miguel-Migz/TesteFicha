@@ -1,55 +1,161 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>C.A.O.S — Ficha de Personagem</title>
-  <link rel="stylesheet" href="./style.css">
-  <style>
-    .id-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; }
-    .identidade-corpo { display: grid; grid-template-columns: auto 2.2fr 1fr 1fr; align-items: stretch; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-soft); }
-    .identidade-col { display: flex; flex-direction: column; justify-content: space-between; gap: 14px; padding: 0 20px; border-left: 1px solid var(--border-soft); }
-    .identidade-col-avatar { border-left: none; padding-left: 0; align-items: center; justify-content: center; }
-    .avatar-circle { width: 160px; height: 160px; border-radius: 50%; background: var(--bg-inset); border: 2px solid var(--border-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
-    .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-    .vitals-grid { display: grid; grid-template-columns: 1.6fr 1fr; grid-auto-rows: 1fr; gap: 12px; }
-    .vital-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
-    .vital-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-    .vital-inputs input { width: 52px; text-align: center; font-family: var(--font-mono); font-size: 0.95rem; padding: 6px 4px; }
-    .dc-btn { background: var(--bg-inset); border: 1px solid var(--border-soft); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: 0.74rem; cursor: pointer; }
-    .dc-btn.dano { border-color: var(--accent-ember); color: var(--accent-ember); }
-    .dc-btn.cura { border-color: #6fbf73; color: #6fbf73; }
-    .derived-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 16px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .derived-card input { width: 88px; text-align: center; font-family: var(--font-display); font-size: 1.4rem; font-weight: 600; color: var(--accent-gold); }
-    .attr-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-    .attr-card { background: var(--bg-panel-alt); border: 1px solid var(--border-soft); border-radius: 8px; padding: 8px 4px; text-align: center; }
-    .attr-card.fisica { border-top: 2px solid var(--accent-ember); }
-    .attr-card.mental { border-top: 2px solid var(--accent-arcane); }
-    .tabbar { display: flex; align-items: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab-btn { background: transparent; border: 1px solid transparent; color: var(--text-faint); font-size: 0.74rem; text-transform: uppercase; font-weight: 600; padding: 8px 14px; border-radius: 6px; cursor: pointer; }
-    .tab-btn.active { color: var(--text); border-color: var(--text); background: var(--bg-inset); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .pericia-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 10px; align-items: center; padding: 8px 6px; border-radius: 6px; font-size: 0.86rem; }
-    .pericia-row:hover { background: var(--bg-panel-alt); }
-    .toggle { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: var(--text-dim); cursor: pointer; }
-    .formula { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-gold); min-width: 110px; text-align: right; }
-    .roll-btn { background: var(--accent-arcane-dim); border: 1px solid var(--accent-arcane); color: var(--text); border-radius: 6px; padding: 6px 12px; font-size: 0.76rem; cursor: pointer; }
-    .actions { position: sticky; bottom: 0; display: flex; gap: 10px; justify-content: flex-end; padding: 14px 0 4px; }
-    .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .crop-viewport { width: 260px; height: 260px; border-radius: 50%; overflow: hidden; position: relative; background: var(--bg-inset); border: 2px solid var(--accent-arcane); margin: 4px auto 0; cursor: grab; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C.A.O.S — Ficha de Personagem</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+  .id-grid{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px; }
+  .identidade-corpo{
+    display:grid; grid-template-columns:auto 2.2fr 1fr 1fr; align-items:stretch;
+    margin-top:16px; padding-top:16px; border-top:1px solid var(--border-soft);
+  }
+  .identidade-col{
+    display:flex; flex-direction:column; justify-content:space-between; gap:14px;
+    padding:0 20px; border-left:1px solid var(--border-soft);
+  }
+  .identidade-col-avatar{ border-left:none; padding-left:0; align-items:center; justify-content:center; }
+  .avatar-wrap{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; }
+  .avatar-circle{
+    width:160px; height:160px; border-radius:50%; background:var(--bg-inset);
+    border:2px solid var(--border-soft); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; overflow:hidden;
+  }
+  .avatar-circle:hover{ border-color:var(--accent-arcane); }
+  .avatar-circle img{ width:100%; height:100%; object-fit:cover; display:block; }
+  #avatar-placeholder{ font-size:0.78rem; color:var(--text-faint); text-align:center; padding:0 12px; }
+  .avatar-remove{ background:none; border:none; color:var(--text-faint); font-size:0.66rem; cursor:pointer; text-decoration:underline; padding:0; }
+  .avatar-remove:hover{ color:var(--accent-ember); }
 
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  <script src="./firebase-config.js"></script>
+  @media (max-width:640px){
+    .identidade-corpo{ grid-template-columns:1fr; }
+    .identidade-col{ border-left:none; border-top:1px solid var(--border-soft); padding:14px 0 0; align-items:center; text-align:center; }
+    .identidade-col-avatar{ border-top:none; padding-top:0; }
+    .id-grid{ grid-template-columns:1fr; }
+  }
+
+  .nivel-stepper{ display:flex; align-items:center; gap:8px; }
+  .nivel-stepper input{ width:56px; text-align:center; }
+  .step-btn{
+    width:30px; height:30px; border-radius:6px; border:1px solid var(--border-soft);
+    background:var(--bg-panel-alt); color:var(--text); cursor:pointer; font-size:1rem; line-height:1;
+  }
+  .step-btn:hover{ border-color:var(--accent-arcane); color:var(--accent-arcane); }
+
+  .vitals-grid{ display:grid; grid-template-columns:1.6fr 1fr; grid-auto-rows:1fr; gap:12px; }
+  .vital-card{ background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+  .vital-top-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .vital-left{ display:flex; align-items:center; gap:10px; }
+  .vital-card-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); }
+  .vital-inputs{ display:flex; align-items:center; gap:4px; }
+  .vital-inputs input{ width:52px; text-align:center; font-family:var(--font-mono); font-size:0.95rem; padding:6px 4px; }
+  .vital-inputs .slash{ color:var(--text-faint); font-family:var(--font-mono); }
+  .vital-card.protecao-card .vital-card-label{ color:var(--accent-arcane); }
+  .dano-cura-row{ display:flex; align-items:center; gap:5px; }
+  .dano-cura-row input{ width:44px; text-align:center; font-family:var(--font-mono); font-size:0.78rem; padding:6px 4px; }
+  .dc-btn{ background:var(--bg-inset); border:1px solid var(--border-soft); color:var(--text); border-radius:6px; padding:6px 10px; font-size:0.74rem; cursor:pointer; }
+  .dc-btn.dano{ border-color:var(--accent-ember); color:var(--accent-ember); }
+  .dc-btn.dano:hover{ background:rgba(226,89,63,0.15); }
+  .dc-btn.cura{ border-color:#6fbf73; color:#6fbf73; }
+  .dc-btn.cura:hover{ background:rgba(111,191,115,0.12); }
+
+  .derived-card{ background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:16px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .derived-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); margin-bottom:10px; }
+  .derived-card input{ width:88px; text-align:center; font-family:var(--font-display); font-size:1.4rem; font-weight:600; color:var(--accent-gold); padding:8px 6px; }
+
+  .attr-grid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:8px; }
+  .attr-mode-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .mode-toggle-btn{ background:var(--bg-inset); border:1px solid var(--border-soft); color:var(--text-dim); border-radius:20px; padding:6px 14px; font-size:0.74rem; cursor:pointer; }
+  .mode-toggle-btn[data-modo="temporario"]{ border-color:var(--accent-arcane); color:var(--accent-arcane); background:rgba(155,107,242,0.1); }
+  .attr-clear-all{ background:none; border:none; color:var(--text-faint); font-size:0.72rem; cursor:pointer; text-decoration:underline; }
+  .attr-clear-all:hover{ color:var(--accent-ember); }
+  .attr-card{ background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:8px 4px; text-align:center; }
+  .attr-card.fisica{ border-top:2px solid var(--accent-ember); }
+  .attr-card.mental{ border-top:2px solid var(--accent-arcane); }
+  .attr-name{ font-size:0.62rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:4px; }
+  .attr-value{ font-family:var(--font-display); font-size:1.25rem; font-weight:600; }
+  .attr-value .efetivo.buff{ color:#4fd57a; }
+  .attr-value .efetivo.debuff{ color:var(--accent-ember); }
+  .attr-dice{ font-family:var(--font-mono); font-size:0.66rem; color:var(--text-faint); margin-bottom:6px; }
+  .attr-controls{ display:flex; justify-content:center; gap:4px; }
+  .attr-controls .step-btn{ width:22px; height:22px; font-size:0.85rem; padding:0; }
+
+  .tabbar{ display:flex; align-items:center; gap:18px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab-btn{ background:transparent; border:1px solid transparent; color:var(--text-faint); font-size:0.74rem; text-transform:uppercase; font-weight:600; padding:8px 14px; border-radius:6px; cursor:pointer; }
+  .tab-btn:hover{ color:var(--text-dim); }
+  .tab-btn.active{ color:var(--text); border-color:var(--text); background:var(--bg-inset); }
+  .tab-content{ display:none; }
+  .tab-content.active{ display:block; }
+  .tab-placeholder{ color:var(--text-faint); font-size:0.86rem; padding:20px 0; text-align:center; }
+
+  .pericia-cat{ margin-bottom:18px; }
+  .pericia-cat-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-faint); margin:0 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px; }
+  .pericia-row{ display:grid; grid-template-columns:1fr auto auto auto auto; gap:10px; align-items:center; padding:8px 6px; border-radius:6px; font-size:0.86rem; }
+  .pericia-row:hover{ background:var(--bg-panel-alt); }
+  .pericia-nome{ display:flex; flex-direction:column; }
+  .pericia-nome span.attrtag{ font-size:0.66rem; color:var(--text-faint); text-transform:uppercase; }
+  .toggle{ display:flex; align-items:center; gap:5px; font-size:0.72rem; color:var(--text-dim); cursor:pointer; }
+  .toggle input{ accent-color:var(--accent-arcane); width:14px; height:14px; }
+  .formula{ font-family:var(--font-mono); font-size:0.78rem; color:var(--accent-gold); min-width:110px; text-align:right; }
+  .roll-btn{ background:var(--accent-arcane-dim); border:1px solid var(--accent-arcane); color:var(--text); border-radius:6px; padding:6px 12px; font-size:0.76rem; cursor:pointer; }
+  .roll-btn:hover{ background:var(--accent-arcane); }
+  .roll-btn.oficio{ background:var(--bg-inset); border-color:var(--accent-gold); color:var(--accent-gold); }
+
+  .item-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .item-list{ display:flex; flex-direction:column; gap:10px; }
+  .item-card{ background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; }
+  .item-card.expandido{ grid-column:1 / -1; }
+  .item-header{ display:flex; align-items:baseline; gap:8px; cursor:pointer; }
+  .item-chevron{ color:var(--text-faint); font-size:0.7rem; width:12px; }
+  .item-nome{ font-family:var(--font-display); font-size:1rem; font-weight:600; }
+  .item-peso, .item-meta, .atalho-formula{ margin-left:auto; font-size:0.72rem; color:var(--text-faint); font-family:var(--font-mono); }
+  .item-body{ margin-top:10px; padding-top:10px; border-top:1px solid var(--border-soft); }
+  .item-desc-text{ font-size:0.84rem; color:var(--text-dim); font-style:italic; white-space:pre-wrap; }
+  .item-footer-actions{ display:flex; justify-content:space-between; margin-top:12px; }
+  .item-action{ background:none; border:none; font-size:0.78rem; cursor:pointer; padding:2px 4px; }
+  .item-action.remover{ color:var(--accent-ember); }
+  .item-action.editar{ color:#4fd57a; }
+  .item-add-card{ grid-column:1 / -1; background:var(--bg-panel-alt); border:1px dashed var(--border-soft); border-radius:8px; padding:16px; display:flex; align-items:center; justify-content:center; min-height:60px; cursor:pointer; color:var(--text-dim); }
+  .item-add-card:hover{ border-color:var(--accent-arcane); color:var(--text); }
+  .item-add-form, .item-edit-form{ grid-column:1 / -1; background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .item-form-row{ display:flex; gap:8px; }
+  .item-tipo-tag, .item-raridade-tag{ font-size:0.68rem; text-transform:uppercase; font-weight:600; margin-bottom:6px; }
+  .tipo-herdada, .tipo-tecnica, .raridade-raro{ color:#4d9eea; }
+  .tipo-extranatural, .tipo-aprimoramento, .tipo-estilo, .raridade-muitoraro{ color:#e5484d; }
+  .tipo-classe, .raridade-lendario{ color:#f0c419; }
+  .tipo-talento, .raridade-incomum{ color:#4fd57a; }
+  .raridade-comum{ color:#e9e4f2; }
+  .raridade-epico{ color:#a56bf2; }
+
+  .dado-row{ display:flex; gap:8px; align-items:center; }
+  .dado-row-remover{ background:none; border:1px solid var(--border-soft); color:var(--text-faint); border-radius:5px; width:26px; height:26px; font-size:0.8rem; cursor:pointer; }
+  .btn-add-dado{ background:none; border:1px dashed var(--border-soft); color:var(--text-dim); border-radius:6px; padding:6px; font-size:0.76rem; cursor:pointer; }
+  .atalho-rolar-btn{ background:var(--accent-arcane-dim); border:1px solid var(--accent-arcane); color:var(--text); border-radius:6px; padding:5px 12px; font-size:0.76rem; cursor:pointer; }
+
+  .anotacoes-grid{ display:grid; grid-template-columns:1fr 1.6fr; gap:14px; height:460px; }
+  .anotacoes-col{ display:flex; flex-direction:column; background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; padding:12px; }
+  .anotacao-item{ display:flex; align-items:center; gap:6px; background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:7px; padding:8px 10px; cursor:pointer; margin-bottom:6px; }
+  .anotacao-item.selecionada{ border-color:var(--accent-arcane); background:var(--bg-inset); }
+  .anotacao-item-titulo{ flex:1; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .anotacao-titulo-input{ background:transparent; border:none; border-bottom:1px solid var(--border-soft); color:var(--text); font-family:var(--font-display); font-size:1.05rem; padding:14px 16px 10px; }
+  .anotacao-conteudo-input{ flex:1; background:transparent; border:none; color:var(--text); padding:12px 16px; resize:none; }
+
+  .actions{ position:sticky; bottom:0; display:flex; gap:10px; justify-content:flex-end; padding:14px 0 4px; }
+  .mesa-panel{ padding:14px 20px; display:flex; align-items:center; }
+  .mesa-form{ display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; width:100%; }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="./firebase-config.js"></script>
 </head>
 <body>
 <div class="wrap">
   <header class="masthead">
     <div>
       <div class="masthead-title">C.<span>A</span>.O.S</div>
-      <div class="masthead-sub">Ficha de Personagem — Módulo Automatizado</div>
+      <div class="masthead-sub">Ficha de Personagem Automatizada</div>
     </div>
     <div class="masthead-actions">
       <button class="btn" id="btn-historico">Histórico</button>
@@ -57,16 +163,16 @@
     </div>
   </header>
 
-  <!-- Mesa Conexão -->
-  <section class="panel" style="padding: 14px 20px;">
-    <div id="mesa-form" style="display: flex; gap: 10px; align-items: flex-end;">
-      <label class="field" style="width: 220px;">ID da Mesa
+  <!-- Painel Conexão de Mesa -->
+  <section class="panel mesa-panel">
+    <div class="mesa-form" id="mesa-form">
+      <label class="field" style="width:240px;">ID da Mesa
         <input type="text" id="f-id-mesa" placeholder="Ex: MESA-8492">
       </label>
       <button class="btn primary" id="btn-entrar-mesa">Entrar na Mesa</button>
     </div>
-    <div id="mesa-status" style="display: none; align-items: center; justify-content: space-between;">
-      <span>Conectado à mesa <b id="mesa-status-id" style="color: var(--accent-gold); font-family: var(--font-mono);"></b></span>
+    <div id="mesa-status" style="display:none; align-items:center; gap:14px; width:100%; justify-content:space-between;">
+      <span>Conectado à mesa <b id="mesa-status-id" style="color:var(--accent-gold); font-family:var(--font-mono);"></b></span>
       <button class="btn" id="btn-sair-mesa">Sair da mesa</button>
     </div>
   </section>
@@ -76,7 +182,7 @@
     <div class="modal-panel">
       <div class="modal-header"><h2 class="panel-title" style="margin:0">Personagens</h2><button class="modal-close" id="btn-fechar-modal">×</button></div>
       <div class="modal-body" id="lista-personagens"></div>
-      <div class="modal-footer"><button class="btn primary" id="btn-novo-personagem" style="width: 100%;">+ Novo personagem</button></div>
+      <div class="modal-footer"><button class="btn primary" id="btn-novo-personagem" style="width:100%;">+ Novo personagem</button></div>
     </div>
   </div>
 
@@ -90,10 +196,10 @@
 
   <div class="modal-overlay" id="modal-editar-foto">
     <div class="modal-panel" style="max-width:360px;">
-      <div class="modal-header"><h2 class="panel-title" style="margin:0">Recortar Foto</h2><button class="modal-close" id="btn-fechar-crop">×</button></div>
-      <div class="modal-body" style="align-items: center;">
-        <div class="crop-viewport" id="crop-viewport"><img id="crop-image" style="position: absolute; top:50%; left:50%; max-width:none;" alt=""></div>
-        <input type="range" id="crop-zoom-slider" min="100" max="300" value="100" style="width: 100%; margin-top: 14px; accent-color: var(--accent-arcane);">
+      <div class="modal-header"><h2 class="panel-title" style="margin:0">Editar Foto</h2><button class="modal-close" id="btn-fechar-crop">×</button></div>
+      <div class="modal-body" style="align-items:center;">
+        <div class="crop-viewport" id="crop-viewport"><img id="crop-image" alt=""></div>
+        <input type="range" id="crop-zoom-slider" min="100" max="300" value="100" style="width:100%; margin-top:14px; accent-color:var(--accent-arcane);">
       </div>
       <div class="modal-footer"><button class="btn primary" id="btn-aplicar-crop">Aplicar</button></div>
     </div>
@@ -101,7 +207,6 @@
 
   <!-- Layout Principal -->
   <div class="layout-grid">
-    <!-- Coluna Esquerda: Abas -->
     <div class="layout-col">
       <section class="panel">
         <div class="tabbar" id="tabbar">
@@ -115,35 +220,33 @@
         </div>
 
         <div class="tab-content active" data-tab-content="pericias">
-          <div style="font-size:0.72rem; color:var(--text-faint); margin:0 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">FÍSICAS</div>
-          <div id="pericias-fisicas"></div>
-          <div style="font-size:0.72rem; color:var(--text-faint); margin:16px 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">MENTAIS</div>
-          <div id="pericias-mentais"></div>
-          <div style="font-size:0.72rem; color:var(--text-faint); margin:16px 0 8px; border-bottom:1px solid var(--border-soft); padding-bottom:6px;">OFÍCIO</div>
-          <div id="pericias-oficio"></div>
+          <div class="pericia-cat"><div class="pericia-cat-label">Físicas</div><div id="pericias-fisicas"></div></div>
+          <div class="pericia-cat"><div class="pericia-cat-label">Mentais</div><div id="pericias-mentais"></div></div>
+          <div class="pericia-cat"><div class="pericia-cat-label">Ofício</div><div id="pericias-oficio"></div></div>
         </div>
 
         <div class="tab-content" data-tab-content="inventario"><div class="item-grid" id="item-grid"></div></div>
         <div class="tab-content" data-tab-content="habilidades"><div class="item-grid" id="hab-grid"></div></div>
-        <div class="tab-content" data-tab-content="tecnicas"><div style="display:flex; flex-direction:column; gap:10px;" id="tecnica-grid"></div></div>
+        <div class="tab-content" data-tab-content="tecnicas"><div class="item-list" id="tecnica-grid"></div></div>
         <div class="tab-content" data-tab-content="talentos"><div class="item-grid" id="talento-grid"></div></div>
-        <div class="tab-content" data-tab-content="atalhos"><div style="display:flex; flex-direction:column; gap:10px;" id="atalho-grid"></div></div>
+        <div class="tab-content" data-tab-content="atalhos"><div class="item-list" id="atalho-grid"></div></div>
+
         <div class="tab-content" data-tab-content="anotacoes">
-          <div style="display:grid; grid-template-columns:1fr 1.6fr; gap:14px; height:460px;">
-            <div style="background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; padding:12px; display:flex; flex-direction:column;">
+          <div class="anotacoes-grid">
+            <div class="anotacoes-col">
               <button class="btn small primary" id="btn-nova-anotacao" style="margin-bottom:10px;">+ Nova nota</button>
-              <div id="anotacoes-lista" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px;"></div>
+              <div id="anotacoes-lista" style="flex:1; overflow-y:auto;"></div>
             </div>
-            <div style="background:var(--bg-inset); border:1px solid var(--border-soft); border-radius:8px; display:flex; flex-direction:column; overflow:hidden;">
-              <input type="text" id="anotacao-titulo-input" style="background:transparent; border:none; border-bottom:1px solid var(--border-soft); color:var(--text); font-family:var(--font-display); font-size:1.05rem; padding:14px 16px 10px;" placeholder="Título da nota">
-              <textarea id="anotacao-conteudo-input" style="flex:1; background:transparent; border:none; color:var(--text); padding:12px 16px; resize:none;" placeholder="Escreva aqui..."></textarea>
+            <div class="anotacoes-col" style="padding:0; overflow:hidden;">
+              <input type="text" id="anotacao-titulo-input" class="anotacao-titulo-input" placeholder="Título da nota" style="display:none;">
+              <textarea id="anotacao-conteudo-input" class="anotacao-conteudo-input" placeholder="Escreva aqui..." style="display:none;"></textarea>
+              <div class="tab-placeholder" id="anotacao-vazio" style="flex:1; display:flex; align-items:center; justify-content:center;">Selecione ou crie uma nota.</div>
             </div>
           </div>
         </div>
       </section>
     </div>
 
-    <!-- Coluna Direita: Identidade / Vitais / Atributos -->
     <div class="layout-col">
       <section class="panel">
         <h2 class="panel-title">Identidade</h2>
@@ -154,28 +257,54 @@
         </div>
         <div class="identidade-corpo">
           <div class="identidade-col identidade-col-avatar">
-            <div class="avatar-circle" id="avatar-circle">
-              <img id="avatar-img" style="display:none;" alt="">
-              <span id="avatar-placeholder" style="font-size:0.78rem; color:var(--text-faint);">+ Foto</span>
+            <div class="avatar-wrap">
+              <div class="avatar-circle" id="avatar-circle">
+                <img id="avatar-img" style="display:none" alt="">
+                <span id="avatar-placeholder">+ Foto</span>
+              </div>
+              <input type="file" id="avatar-input" accept="image/*" style="display:none">
+              <button class="avatar-remove" id="avatar-remove" style="display:none">Remover</button>
             </div>
-            <input type="file" id="avatar-input" accept="image/*" style="display:none;">
-            <button id="avatar-remove" style="background:none; border:none; color:var(--text-faint); font-size:0.66rem; cursor:pointer; text-decoration:underline; display:none;">Remover</button>
           </div>
           <div class="identidade-col">
             <label class="field">Antecedente<input type="text" id="f-antecedente"></label>
             <label class="field">Ofício
               <select id="f-oficio">
-                <option value="">— nenhum —</option><option>Alquimia</option><option>Arte da Guerra</option><option>Ferraria</option><option>Carpintaria</option><option>Culinária</option><option>Herborismo</option><option>Engenharia</option>
+                <option value="">— nenhum —</option><option>Alquimia</option><option>Arte da Guerra</option><option>Ferraria</option><option>Carpintaria</option><option>Culinária</option><option>Escultura</option><option>Herborismo</option><option>Lapidar</option><option>Metalurgia</option><option>Pintura</option><option>Relojoaria</option><option>Sapataria</option><option>Tecelagem</option><option>Engenharia</option>
               </select>
             </label>
           </div>
           <div class="identidade-col">
-            <label class="field">Proficiência<input type="number" id="f-proficiencia" min="0" max="20" value="1"></label>
-            <label class="field">Nível<input type="number" id="f-nivel" min="1" max="20" value="1"></label>
+            <label class="field">Proficiência
+              <div class="nivel-stepper">
+                <button class="step-btn" data-prof-step="-1">–</button>
+                <input type="number" id="f-proficiencia" min="0" max="20" value="1">
+                <button class="step-btn" data-prof-step="1">+</button>
+              </div>
+            </label>
+            <label class="field">Nível
+              <div class="nivel-stepper">
+                <button class="step-btn" data-nivel-step="-1">–</button>
+                <input type="number" id="f-nivel" min="1" max="20" value="1">
+                <button class="step-btn" data-nivel-step="1">+</button>
+              </div>
+            </label>
           </div>
           <div class="identidade-col">
-            <label class="field">Cansaço<input type="number" id="f-cansaco" min="0" value="0"></label>
-            <label class="field">Exaustão<input type="number" id="f-exaustao" min="0" value="0"></label>
+            <label class="field">Cansaço
+              <div class="nivel-stepper">
+                <button class="step-btn" data-cansaco-step="-1">–</button>
+                <input type="number" id="f-cansaco" min="0" value="0">
+                <button class="step-btn" data-cansaco-step="1">+</button>
+              </div>
+            </label>
+            <label class="field">Exaustão
+              <div class="nivel-stepper">
+                <button class="step-btn" data-exaustao-step="-1">–</button>
+                <input type="number" id="f-exaustao" min="0" value="0">
+                <button class="step-btn" data-exaustao-step="1">+</button>
+              </div>
+            </label>
           </div>
         </div>
       </section>
@@ -185,38 +314,42 @@
         <div class="vitals-grid">
           <div class="vital-card">
             <div class="vital-top-row">
-              <span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim);">Vida</span>
-              <div class="vital-inputs"><input type="number" id="v-pv-atual"> / <input type="number" id="v-pv-max"></div>
-              <div style="display:flex; gap:5px;">
-                <input type="number" id="v-pv-delta" style="width:44px; text-align:center;" placeholder="Qtd">
+              <div class="vital-left">
+                <span class="vital-card-label">Vida</span>
+                <div class="vital-inputs"><input type="number" id="v-pv-atual"><span class="slash">/</span><input type="number" id="v-pv-max"></div>
+              </div>
+              <div class="dano-cura-row">
+                <input type="number" id="v-pv-delta" placeholder="Qtd">
                 <button class="dc-btn dano" data-vital="pv" data-sinal="-1">Dano</button>
                 <button class="dc-btn cura" data-vital="pv" data-sinal="1">Cura</button>
               </div>
             </div>
-            <div class="bar-track"><div class="bar-fill vida" id="v-pv-bar" style="width:100%;"></div></div>
+            <div class="bar-track"><div class="bar-fill vida" id="v-pv-bar" style="width:100%"></div></div>
           </div>
-          <div class="derived-card"><span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px;">DT</span><input type="text" id="v-dt"></div>
-          <div class="vital-card">
+          <div class="derived-card"><span class="derived-label">DT</span><input type="text" id="v-dt"></div>
+          <div class="vital-card protecao-card">
             <div class="vital-top-row">
-              <span style="font-size:0.72rem; text-transform:uppercase; color:var(--accent-arcane);">Proteção</span>
-              <div class="vital-inputs"><input type="number" id="v-prot-atual"> / <input type="number" id="v-prot-max"></div>
-              <div style="display:flex; gap:5px;">
-                <input type="number" id="v-prot-delta" style="width:44px; text-align:center;" placeholder="Qtd">
+              <div class="vital-left">
+                <span class="vital-card-label">Proteção</span>
+                <div class="vital-inputs"><input type="number" id="v-prot-atual"><span class="slash">/</span><input type="number" id="v-prot-max"></div>
+              </div>
+              <div class="dano-cura-row">
+                <input type="number" id="v-prot-delta" placeholder="Qtd">
                 <button class="dc-btn dano" data-vital="prot" data-sinal="-1">Dano</button>
                 <button class="dc-btn cura" data-vital="prot" data-sinal="1">Cura</button>
               </div>
             </div>
-            <div class="bar-track"><div class="bar-fill protecao" id="v-prot-bar" style="width:100%;"></div></div>
+            <div class="bar-track"><div class="bar-fill protecao" id="v-prot-bar" style="width:100%"></div></div>
           </div>
-          <div class="derived-card"><span style="font-size:0.72rem; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px;">Deslocamento</span><input type="text" id="v-desloc-input"></div>
+          <div class="derived-card"><span class="derived-label">Deslocamento</span><input type="text" id="v-desloc-input"></div>
         </div>
       </section>
 
       <section class="panel">
         <h2 class="panel-title">Atributos</h2>
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-          <button class="btn small" id="btn-modo-atributo">Modo: Permanente</button>
-          <button id="btn-limpar-temp" style="background:none; border:none; color:var(--text-faint); font-size:0.72rem; cursor:pointer; text-decoration:underline; display:none;">Limpar temporários</button>
+        <div class="attr-mode-bar">
+          <button class="mode-toggle-btn" id="btn-modo-atributo">Modo: Permanente</button>
+          <button class="attr-clear-all" id="btn-limpar-temp" style="display:none">Limpar temporários</button>
         </div>
         <div class="attr-grid" id="attr-grid"></div>
       </section>
@@ -228,7 +361,7 @@
     <span id="sync-indicator" style="font-size:0.72rem; color:var(--text-faint); align-self:center;"></span>
     <button class="btn" id="btn-reset">Resetar ficha</button>
     <button class="btn" id="btn-import">Importar JSON</button>
-    <input type="file" id="import-input" accept="application/json" style="display:none;">
+    <input type="file" id="import-input" accept="application/json" style="display:none">
     <button class="btn primary" id="btn-export">Exportar JSON</button>
   </div>
 </div>
@@ -238,6 +371,10 @@
 <script>
 (function(){
   "use strict";
+
+  const LOCALSTORAGE_PREFIX = "caos_ficha_";
+  const LAST_ACTIVE_KEY = "caos_ultimo_personagem_id";
+  const SESSION_KEY = "personagem_ativo_id";
 
   const ATRIBUTOS_DEF = [
     { chave:"forca", nome:"Força", categoria:"fisica" },
@@ -270,13 +407,9 @@
     ]
   };
 
-  const LOCALSTORAGE_PREFIX = "caos_ficha_";
-  const LAST_ACTIVE_KEY = "caos_ultimo_personagem_id";
-  const SESSION_KEY = "personagem_ativo_id";
-
   let aplicandoAtualizacaoRemota = false;
-  let modoAtributoTemporario = false;
   let pararEscutaMesa = null;
+  let modoAtributoTemporario = false;
 
   function estadoPadrao(){
     const atributos = {};
@@ -298,10 +431,10 @@
   }
 
   function carregarPersonagem(id){
-    try {
+    try{
       const raw = localStorage.getItem(LOCALSTORAGE_PREFIX + id);
       return raw ? JSON.parse(raw) : null;
-    } catch(e) { return null; }
+    }catch(e){ return null; }
   }
 
   let estado = (function(){
@@ -319,41 +452,101 @@
     localStorage.setItem(LAST_ACTIVE_KEY, estado.id);
     sessionStorage.setItem(SESSION_KEY, estado.id);
     document.getElementById("save-indicator").textContent = "salvo " + new Date().toLocaleTimeString("pt-BR");
-    if(firebaseOk && estado.idMesa && !aplicandoAtualizacaoRemota){
-      conectarJogadorMesa(estado.idMesa, estado);
-    }
+    sincronizarFirebase();
+  }
+
+  function atualizarIndicadorConexao(){
+    const el = document.getElementById("sync-indicator");
+    if(!el) return;
+    if(!firebaseOk) el.textContent = "🔴 modo local (Firebase off)";
+    else if(!estado.idMesa) el.textContent = "🔴 sem mesa";
+    else el.textContent = "🟢 conectado em " + estado.idMesa;
+  }
+
+  function escutarPersonagemRemoto(){
+    if(pararEscutaMesa){ pararEscutaMesa(); pararEscutaMesa = null; }
+    if(!firebaseOk || !estado.idMesa){ atualizarIndicadorConexao(); return; }
+
+    pararEscutaMesa = escutarJogadoresDaMesa(estado.idMesa, (jogadores)=>{
+      const remoto = jogadores && jogadores[estado.id];
+      if(!remoto) return;
+      if((remoto.atualizadoEm || 0) > (estado.atualizadoEm || 0)){
+        aplicandoAtualizacaoRemota = true;
+        estado = remoto;
+        localStorage.setItem(LOCALSTORAGE_PREFIX + estado.id, JSON.stringify(estado));
+        render();
+        aplicandoAtualizacaoRemota = false;
+      }
+    });
+    atualizarIndicadorConexao();
+  }
+
+  function sincronizarFirebase(){
+    if(!firebaseOk || !estado.idMesa || aplicandoAtualizacaoRemota) return;
+    conectarJogadorMesa(estado.idMesa, estado).catch(()=>{});
   }
 
   function valorEfetivoAtributo(chave){
-    const a = estado.atributos[chave];
-    return Math.max(0, a.pontos + (a.modTemp || 0));
+    const a = estado.atributos[chave] || { pontos:1 };
+    return Math.max(0, (a.pontos || 1) + (a.modTemp || 0));
   }
 
-  function formulaPericia(pericia){
-    if(pericia.isOficio) return "Automático";
-    const qtd = valorEfetivoAtributo(pericia.atributoBase);
+  function formulaPericia(p){
+    if(p.isOficio) return "Automático";
+    const qtd = valorEfetivoAtributo(p.atributoBase);
     const prof = estado.identidade.proficiencia;
     let f = `${qtd}d10`;
-    if(pericia.treinado) f += pericia.expert ? ` + ${prof*6} (${prof}d6 máx)` : ` + ${prof}d6`;
+    if(p.treinado) f += p.expert ? ` + ${prof*6} (${prof}d6 máx)` : ` + ${prof}d6`;
     return f;
   }
 
+  function mostrarResultado(nome, resultado){
+    const log = document.getElementById("roll-log");
+    const toast = document.createElement("div");
+    toast.className = "roll-toast";
+    let detalhe = "";
+    if(resultado.sucessoAutomatico){
+      toast.innerHTML = `<div class="rt-title">${nome}</div><div class="rt-total">✓ Sucesso Automático</div>`;
+    } else {
+      detalhe = resultado.breakdown || `→ d10:[${resultado.d10s.join(", ")}] ${resultado.d6s && resultado.d6s.length ? "d6:["+resultado.d6s.join(", ")+"]" : ""} ${resultado.bonus ? "+"+resultado.bonus : ""}`;
+      toast.innerHTML = `<div class="rt-title">${nome}</div><div class="rt-total">${resultado.total}</div><div class="rt-breakdown">${resultado.formula} ${detalhe}</div>`;
+    }
+    log.appendChild(toast);
+    setTimeout(()=> toast.remove(), 6000);
+
+    estado.historicoRolagens.unshift({
+      nome, total: resultado.total, formula: resultado.formula || "", detalhe, hora: new Date().toLocaleTimeString("pt-BR")
+    });
+    if(estado.historicoRolagens.length > 50) estado.historicoRolagens.length = 50;
+    salvar();
+
+    if(firebaseOk && estado.idMesa){
+      firebase.database().ref(`mesas/${estado.idMesa}/rolagens`).push({
+        personagemId: estado.id, personagemNome: estado.identidade.nome || "Sem Nome",
+        nomeTeste: nome, total: resultado.total ?? null, formula: resultado.formula || "",
+        detalhe, timestamp: Date.now()
+      }).catch(()=>{});
+    }
+  }
+
+  // Render Atributos
   function renderAtributos(){
     const grid = document.getElementById("attr-grid");
     grid.innerHTML = "";
     ATRIBUTOS_DEF.forEach(def => {
-      const base = estado.atributos[def.chave].pontos;
-      const modTemp = estado.atributos[def.chave].modTemp || 0;
+      const a = estado.atributos[def.chave] || { pontos:1 };
+      const base = a.pontos || 1;
+      const modTemp = a.modTemp || 0;
       const efetivo = valorEfetivoAtributo(def.chave);
       const card = document.createElement("div");
       card.className = `attr-card ${def.categoria}`;
       card.innerHTML = `
-        <div style="font-size:0.62rem; text-transform:uppercase; color:var(--text-dim);">${def.nome}</div>
-        <div style="font-family:var(--font-display); font-size:1.25rem; font-weight:600;">${base}${modTemp !== 0 ? ` <span style="font-size:0.85em; color:${modTemp>0?'#4fd57a':'var(--accent-ember)'}">(${efetivo})</span>` : ""}</div>
-        <div style="font-family:var(--font-mono); font-size:0.66rem; color:var(--text-faint);">${efetivo}d10</div>
-        <div style="display:flex; justify-content:center; gap:4px; margin-top:4px;">
-          <button class="btn small" style="padding:2px 8px;" data-attr="${def.chave}" data-step="-1">–</button>
-          <button class="btn small" style="padding:2px 8px;" data-attr="${def.chave}" data-step="1">+</button>
+        <div class="attr-name">${def.nome}</div>
+        <div class="attr-value">${base}${modTemp !== 0 ? ` <span class="efetivo ${modTemp > 0 ? "buff" : "debuff"}">(${efetivo})</span>` : ""}</div>
+        <div class="attr-dice">${efetivo}d10</div>
+        <div class="attr-controls">
+          <button class="step-btn" data-attr="${def.chave}" data-step="-1">–</button>
+          <button class="step-btn" data-attr="${def.chave}" data-step="1">+</button>
         </div>`;
       grid.appendChild(card);
     });
@@ -362,24 +555,26 @@
       btn.addEventListener("click", ()=>{
         const chave = btn.dataset.attr;
         const step = parseInt(btn.dataset.step,10);
+        if(!estado.atributos[chave]) estado.atributos[chave] = { pontos:1 };
         if(modoAtributoTemporario){
           estado.atributos[chave].modTemp = Math.max(-10, Math.min(10, (estado.atributos[chave].modTemp || 0) + step));
         } else {
-          estado.atributos[chave].pontos = Math.max(0, Math.min(10, estado.atributos[chave].pontos + step));
+          estado.atributos[chave].pontos = Math.max(0, Math.min(20, (estado.atributos[chave].pontos || 1) + step));
         }
         render(); salvar();
       });
     });
   }
 
+  // Render Perícias
   function renderPericias(cat, containerId){
     const container = document.getElementById(containerId);
     container.innerHTML = "";
-    estado.pericias[cat].forEach((p, idx)=>{
+    (estado.pericias[cat] || []).forEach((p, idx)=>{
       const row = document.createElement("div");
       row.className = "pericia-row";
       row.innerHTML = `
-        <div>${p.nome} <span style="font-size:0.66rem; color:var(--text-faint); text-transform:uppercase;">${p.atributoBase}</span></div>
+        <div class="pericia-nome">${p.nome}<span class="attrtag">${p.atributoBase}</span></div>
         <label class="toggle"><input type="checkbox" data-cat="${cat}" data-idx="${idx}" data-field="treinado" ${p.treinado?"checked":""}> Treinado</label>
         <label class="toggle"><input type="checkbox" data-cat="${cat}" data-idx="${idx}" data-field="expert" ${p.expert?"checked":""} ${!p.treinado?"disabled":""}> Expert</label>
         <div class="formula">${formulaPericia(p)}</div>
@@ -408,32 +603,333 @@
           else d6s = Array.from({length: Math.max(prof,0)}, () => 1 + Math.floor(Math.random()*6));
         }
         const total = d10s.reduce((a,b)=>a+b,0) + d6s.reduce((a,b)=>a+b,0) + bonus;
-        mostrarToast(p.nome, total, `${formulaPericia(p)} → d10:[${d10s.join(", ")}] ${d6s.length?"d6:["+d6s.join(", ")+"]":""}`);
+        mostrarResultado(p.nome, { total, formula: formulaPericia(p), d10s, d6s, bonus });
       });
     });
   }
 
-  function mostrarToast(nome, total, formula){
-    const log = document.getElementById("roll-log");
-    const toast = document.createElement("div");
-    toast.className = "roll-toast";
-    toast.innerHTML = `<div class="rt-title">${nome}</div><div class="rt-total">${total}</div><div class="rt-breakdown">${formula}</div>`;
-    log.appendChild(toast);
-    setTimeout(()=> toast.remove(), 6000);
+  // Render Inventário, Habilidades, Técnicas, Talentos
+  let invForm = false, habForm = false, tecForm = false, talForm = false, ataForm = false;
+
+  function renderInventario(){
+    const grid = document.getElementById("item-grid");
+    grid.innerHTML = "";
+    if(invForm){
+      grid.innerHTML = `
+        <div class="item-add-form">
+          <input type="text" id="novo-item-nome" placeholder="Nome do item">
+          <div class="item-form-row">
+            <select id="novo-item-raridade"><option value="comum">Comum</option><option value="incomum">Incomum</option><option value="raro">Raro</option><option value="muitoraro">Muito Raro</option><option value="epico">Épico</option><option value="lendario">Lendário</option></select>
+            <input type="number" id="novo-item-peso" placeholder="Peso (kg)" step="0.1">
+          </div>
+          <textarea id="novo-item-desc" placeholder="Descrição"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn" id="canc-inv">Cancelar</button><button class="btn primary" id="salv-inv">Salvar</button>
+          </div>
+        </div>`;
+      document.getElementById("canc-inv").onclick = ()=>{ invForm = false; renderInventario(); };
+      document.getElementById("salv-inv").onclick = ()=>{
+        const nome = document.getElementById("novo-item-nome").value.trim();
+        if(!nome) return;
+        estado.inventario.push({
+          nome, raridade: document.getElementById("novo-item-raridade").value,
+          peso: parseFloat(document.getElementById("novo-item-peso").value) || 0,
+          descricao: document.getElementById("novo-item-desc").value.trim(), aberta: false
+        });
+        invForm = false; renderInventario(); salvar();
+      };
+      return;
+    }
+    const add = document.createElement("div");
+    add.className = "item-add-card"; add.textContent = "+ Adicionar item";
+    add.onclick = ()=>{ invForm = true; renderInventario(); };
+    grid.appendChild(add);
+
+    estado.inventario.forEach((item, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item-card" + (item.aberta ? " expandido" : "");
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-chevron">${item.aberta ? "▾" : "▸"}</span>
+          <span class="item-nome raridade-${item.raridade}">${item.nome}</span>
+          <span class="item-peso">${item.peso}kg</span>
+        </div>
+        ${item.aberta ? `<div class="item-body"><div class="item-raridade-tag">${item.raridade}</div><div class="item-desc-text">${item.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
+      card.querySelector(".item-header").onclick = ()=>{ item.aberta = !item.aberta; renderInventario(); };
+      const del = card.querySelector("[data-del]");
+      if(del) del.onclick = (e)=>{ e.stopPropagation(); estado.inventario.splice(idx,1); renderInventario(); salvar(); };
+      grid.appendChild(card);
+    });
   }
 
-  function render(){
-    document.getElementById("f-nome").value = estado.identidade.nome;
-    document.getElementById("f-classe").value = estado.identidade.classe;
-    document.getElementById("f-subclasse").value = estado.identidade.subclasse;
-    document.getElementById("f-antecedente").value = estado.identidade.antecedente;
-    document.getElementById("f-oficio").value = estado.identidade.oficio;
-    document.getElementById("f-nivel").value = estado.identidade.nivel;
-    document.getElementById("f-proficiencia").value = estado.identidade.proficiencia;
-    document.getElementById("f-cansaco").value = estado.identidade.cansaco;
-    document.getElementById("f-exaustao").value = estado.identidade.exaustao;
+  function renderHabilidades(){
+    const grid = document.getElementById("hab-grid");
+    grid.innerHTML = "";
+    if(habForm){
+      grid.innerHTML = `
+        <div class="item-add-form">
+          <input type="text" id="novo-hab-nome" placeholder="Nome da habilidade">
+          <div class="item-form-row">
+            <select id="novo-hab-tipo"><option value="classe">Classe</option><option value="extranatural">Extranatural</option><option value="herdada">Herdada</option></select>
+            <input type="number" id="novo-hab-nv" placeholder="Nível" value="1">
+          </div>
+          <textarea id="novo-hab-desc" placeholder="Descrição"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn" id="canc-hab">Cancelar</button><button class="btn primary" id="salv-hab">Salvar</button>
+          </div>
+        </div>`;
+      document.getElementById("canc-hab").onclick = ()=>{ habForm = false; renderHabilidades(); };
+      document.getElementById("salv-hab").onclick = ()=>{
+        const nome = document.getElementById("novo-hab-nome").value.trim();
+        if(!nome) return;
+        estado.habilidades.push({
+          nome, tipo: document.getElementById("novo-hab-tipo").value,
+          nivel: parseInt(document.getElementById("novo-hab-nv").value,10) || 1,
+          descricao: document.getElementById("novo-hab-desc").value.trim(), aberta: false
+        });
+        habForm = false; renderHabilidades(); salvar();
+      };
+      return;
+    }
+    const add = document.createElement("div");
+    add.className = "item-add-card"; add.textContent = "+ Adicionar habilidade";
+    add.onclick = ()=>{ habForm = true; renderHabilidades(); };
+    grid.appendChild(add);
 
-    const r = estado.recursos;
+    estado.habilidades.forEach((hab, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item-card" + (hab.aberta ? " expandido" : "");
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-chevron">${hab.aberta ? "▾" : "▸"}</span>
+          <span class="item-nome tipo-${hab.tipo}">${hab.nome}</span>
+          <span class="item-meta">Nv. ${hab.nivel}</span>
+        </div>
+        ${hab.aberta ? `<div class="item-body"><div class="item-tipo-tag tipo-${hab.tipo}">${hab.tipo}</div><div class="item-desc-text">${hab.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
+      card.querySelector(".item-header").onclick = ()=>{ hab.aberta = !hab.aberta; renderHabilidades(); };
+      const del = card.querySelector("[data-del]");
+      if(del) del.onclick = (e)=>{ e.stopPropagation(); estado.habilidades.splice(idx,1); renderHabilidades(); salvar(); };
+      grid.appendChild(card);
+    });
+  }
+
+  function renderTecnicas(){
+    const list = document.getElementById("tecnica-grid");
+    list.innerHTML = "";
+    if(tecForm){
+      list.innerHTML = `
+        <div class="item-add-form">
+          <input type="text" id="novo-tec-nome" placeholder="Nome da técnica">
+          <select id="novo-tec-tipo"><option value="tecnica">Técnica</option><option value="estilo">Estilo de Luta</option></select>
+          <textarea id="novo-tec-desc" placeholder="Descrição"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn" id="canc-tec">Cancelar</button><button class="btn primary" id="salv-tec">Salvar</button>
+          </div>
+        </div>`;
+      document.getElementById("canc-tec").onclick = ()=>{ tecForm = false; renderTecnicas(); };
+      document.getElementById("salv-tec").onclick = ()=>{
+        const nome = document.getElementById("novo-tec-nome").value.trim();
+        if(!nome) return;
+        estado.tecnicas.push({
+          nome, tipo: document.getElementById("novo-tec-tipo").value,
+          descricao: document.getElementById("novo-tec-desc").value.trim(), aberta: false
+        });
+        tecForm = false; renderTecnicas(); salvar();
+      };
+      return;
+    }
+    const add = document.createElement("div");
+    add.className = "item-add-card"; add.textContent = "+ Adicionar técnica";
+    add.onclick = ()=>{ tecForm = true; renderTecnicas(); };
+    list.appendChild(add);
+
+    estado.tecnicas.forEach((tec, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item-card";
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-chevron">${tec.aberta ? "▾" : "▸"}</span>
+          <span class="item-nome tipo-${tec.tipo}">${tec.nome}</span>
+        </div>
+        ${tec.aberta ? `<div class="item-body"><div class="item-desc-text">${tec.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
+      card.querySelector(".item-header").onclick = ()=>{ tec.aberta = !tec.aberta; renderTecnicas(); };
+      const del = card.querySelector("[data-del]");
+      if(del) del.onclick = (e)=>{ e.stopPropagation(); estado.tecnicas.splice(idx,1); renderTecnicas(); salvar(); };
+      list.appendChild(card);
+    });
+  }
+
+  function renderTalentos(){
+    const grid = document.getElementById("talento-grid");
+    grid.innerHTML = "";
+    if(talForm){
+      grid.innerHTML = `
+        <div class="item-add-form">
+          <input type="text" id="novo-tal-nome" placeholder="Nome do talento">
+          <select id="novo-tal-tipo"><option value="talento">Talento</option><option value="aprimoramento">Aprimoramento Extranatural</option></select>
+          <textarea id="novo-tal-desc" placeholder="Descrição"></textarea>
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn" id="canc-tal">Cancelar</button><button class="btn primary" id="salv-tal">Salvar</button>
+          </div>
+        </div>`;
+      document.getElementById("canc-tal").onclick = ()=>{ talForm = false; renderTalentos(); };
+      document.getElementById("salv-tal").onclick = ()=>{
+        const nome = document.getElementById("novo-tal-nome").value.trim();
+        if(!nome) return;
+        estado.talentos.push({
+          nome, tipo: document.getElementById("novo-tal-tipo").value,
+          descricao: document.getElementById("novo-tal-desc").value.trim(), aberta: false
+        });
+        talForm = false; renderTalentos(); salvar();
+      };
+      return;
+    }
+    const add = document.createElement("div");
+    add.className = "item-add-card"; add.textContent = "+ Adicionar talento";
+    add.onclick = ()=>{ talForm = true; renderTalentos(); };
+    grid.appendChild(add);
+
+    estado.talentos.forEach((tal, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item-card" + (tal.aberta ? " expandido" : "");
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-chevron">${tal.aberta ? "▾" : "▸"}</span>
+          <span class="item-nome tipo-${tal.tipo}">${tal.nome}</span>
+        </div>
+        ${tal.aberta ? `<div class="item-body"><div class="item-desc-text">${tal.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
+      card.querySelector(".item-header").onclick = ()=>{ tal.aberta = !tal.aberta; renderTalentos(); };
+      const del = card.querySelector("[data-del]");
+      if(del) del.onclick = (e)=>{ e.stopPropagation(); estado.talentos.splice(idx,1); renderTalentos(); salvar(); };
+      grid.appendChild(card);
+    });
+  }
+
+  function renderAtalhos(){
+    const list = document.getElementById("atalho-grid");
+    list.innerHTML = "";
+    if(ataForm){
+      list.innerHTML = `
+        <div class="item-add-form">
+          <input type="text" id="novo-ata-nome" placeholder="Nome do atalho">
+          <div class="dado-row">
+            <select id="novo-ata-tipo"><option value="d4">d4</option><option value="d6">d6</option><option value="d8">d8</option><option value="d10" selected>d10</option><option value="d12">d12</option><option value="d20">d20</option></select>
+            <input type="number" id="novo-ata-qtd" value="1" min="1" placeholder="Qtd">
+          </div>
+          <input type="number" id="novo-ata-bonus" value="0" placeholder="Bônus (+/-)">
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn" id="canc-ata">Cancelar</button><button class="btn primary" id="salv-ata">Salvar</button>
+          </div>
+        </div>`;
+      document.getElementById("canc-ata").onclick = ()=>{ ataForm = false; renderAtalhos(); };
+      document.getElementById("salv-ata").onclick = ()=>{
+        const nome = document.getElementById("novo-ata-nome").value.trim();
+        if(!nome) return;
+        estado.atalhos.push({
+          nome, tipo: document.getElementById("novo-ata-tipo").value,
+          qtd: parseInt(document.getElementById("novo-ata-qtd").value,10) || 1,
+          bonus: parseInt(document.getElementById("novo-ata-bonus").value,10) || 0
+        });
+        ataForm = false; renderAtalhos(); salvar();
+      };
+      return;
+    }
+    const add = document.createElement("div");
+    add.className = "item-add-card"; add.textContent = "+ Adicionar atalho";
+    add.onclick = ()=>{ ataForm = true; renderAtalhos(); };
+    list.appendChild(add);
+
+    estado.atalhos.forEach((ata, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item-card";
+      card.innerHTML = `
+        <div class="item-header">
+          <span class="item-nome">${ata.nome}</span>
+          <span class="atalho-formula">${ata.qtd}${ata.tipo}${ata.bonus ? (ata.bonus>0?"+":"")+ata.bonus : ""}</span>
+          <button class="atalho-rolar-btn" data-roll="${idx}">Rolar</button>
+          <button class="item-action remover" data-del="${idx}" style="margin-left:8px;">×</button>
+        </div>`;
+      card.querySelector("[data-roll]").onclick = ()=>{
+        const faces = parseInt(ata.tipo.replace("d",""),10);
+        const rolls = Array.from({length: ata.qtd}, ()=> 1 + Math.floor(Math.random()*faces));
+        const total = rolls.reduce((a,b)=>a+b,0) + (ata.bonus || 0);
+        mostrarResultado(ata.nome, { total, formula: `${ata.qtd}${ata.tipo}${ata.bonus?'+'+ata.bonus:''}`, breakdown: `→ [${rolls.join(", ")}]` });
+      };
+      card.querySelector("[data-del]").onclick = ()=>{ estado.atalhos.splice(idx,1); renderAtalhos(); salvar(); };
+      list.appendChild(card);
+    });
+  }
+
+  // Render Anotações
+  let notaAtivaId = null;
+  function renderAnotacoes(){
+    const list = document.getElementById("anotacoes-lista");
+    list.innerHTML = "";
+    if(!estado.anotacoes.length){
+      document.getElementById("anotacao-titulo-input").style.display = "none";
+      document.getElementById("anotacao-conteudo-input").style.display = "none";
+      document.getElementById("anotacao-vazio").style.display = "flex";
+      return;
+    }
+    if(!notaAtivaId && estado.anotacoes.length) notaAtivaId = estado.anotacoes[0].id;
+    const nota = estado.anotacoes.find(n => n.id === notaAtivaId) || estado.anotacoes[0];
+
+    document.getElementById("anotacao-titulo-input").style.display = "block";
+    document.getElementById("anotacao-conteudo-input").style.display = "block";
+    document.getElementById("anotacao-vazio").style.display = "none";
+    document.getElementById("anotacao-titulo-input").value = nota.titulo;
+    document.getElementById("anotacao-conteudo-input").value = nota.conteudo;
+
+    estado.anotacoes.forEach(n => {
+      const item = document.createElement("div");
+      item.className = "anotacao-item" + (n.id === notaAtivaId ? " selecionada" : "");
+      item.innerHTML = `<span class="anotacao-item-titulo">${n.titulo||"(sem título)"}</span><button class="avatar-remove" data-del="${n.id}">×</button>`;
+      item.onclick = ()=>{ notaAtivaId = n.id; renderAnotacoes(); };
+      item.querySelector("[data-del]").onclick = (e)=>{
+        e.stopPropagation(); estado.anotacoes = estado.anotacoes.filter(x => x.id !== n.id);
+        if(notaAtivaId === n.id) notaAtivaId = null;
+        renderAnotacoes(); salvar();
+      };
+      list.appendChild(item);
+    });
+  }
+
+  document.getElementById("btn-nova-anotacao").onclick = ()=>{
+    const n = { id: "nota_" + Date.now(), titulo: "Nova nota", conteudo: "" };
+    estado.anotacoes.unshift(n); notaAtivaId = n.id;
+    renderAnotacoes(); salvar();
+  };
+  document.getElementById("anotacao-titulo-input").oninput = (e)=>{
+    const n = estado.anotacoes.find(x => x.id === notaAtivaId);
+    if(n){ n.titulo = e.target.value; salvar(); renderAnotacoes(); }
+  };
+  document.getElementById("anotacao-conteudo-input").oninput = (e)=>{
+    const n = estado.anotacoes.find(x => x.id === notaAtivaId);
+    if(n){ n.conteudo = e.target.value; salvar(); }
+  };
+
+  // Render Geral
+  function render(){
+    if(estado.idMesa){
+      document.getElementById("mesa-form").style.display = "none";
+      document.getElementById("mesa-status").style.display = "flex";
+      document.getElementById("mesa-status-id").textContent = estado.idMesa;
+    } else {
+      document.getElementById("mesa-form").style.display = "flex";
+      document.getElementById("mesa-status").style.display = "none";
+    }
+
+    document.getElementById("f-nome").value = estado.identidade.nome || "";
+    document.getElementById("f-classe").value = estado.identidade.classe || "Sicário";
+    document.getElementById("f-subclasse").value = estado.identidade.subclasse || "Arcanista";
+    document.getElementById("f-antecedente").value = estado.identidade.antecedente || "";
+    document.getElementById("f-oficio").value = estado.identidade.oficio || "";
+    document.getElementById("f-nivel").value = estado.identidade.nivel || 1;
+    document.getElementById("f-proficiencia").value = estado.identidade.proficiencia || 1;
+    document.getElementById("f-cansaco").value = estado.identidade.cansaco || 0;
+    document.getElementById("f-exaustao").value = estado.identidade.exaustao || 0;
+
+    const r = estado.recursos || { pvAtual:10, pvMaximo:10, protAtual:0, protMaximo:0, dt:"16", deslocamento:"10m" };
     document.getElementById("v-pv-atual").value = r.pvAtual;
     document.getElementById("v-pv-max").value = r.pvMaximo;
     document.getElementById("v-pv-bar").style.width = (r.pvMaximo > 0 ? (r.pvAtual/r.pvMaximo)*100 : 0) + "%";
@@ -446,13 +942,19 @@
     renderAtributos();
     renderPericias("fisicas", "pericias-fisicas");
     renderPericias("mentais", "pericias-mentais");
+    renderInventario();
+    renderHabilidades();
+    renderTecnicas();
+    renderTalentos();
+    renderAtalhos();
+    renderAnotacoes();
+    atualizarIndicadorConexao();
   }
 
-  // Eventos de inputs de texto/números
-  ["f-nome","f-classe","f-subclasse","f-antecedente","f-oficio"].forEach(id=>{
+  // Event Listeners Básicos
+  ["f-nome","f-classe","f-subclasse","f-antecedente","f-oficio","f-nivel","f-proficiencia","f-cansaco","f-exaustao"].forEach(id=>{
     document.getElementById(id).addEventListener("input", (e)=>{
-      const campo = id.replace("f-","");
-      estado.identidade[campo] = e.target.value;
+      estado.identidade[id.replace("f-","")] = e.target.value;
       salvar();
     });
   });
@@ -461,12 +963,65 @@
     btn.addEventListener("click", ()=>{
       const alvo = btn.dataset.tab;
       document.querySelectorAll("#tabbar .tab-btn").forEach(b => b.classList.toggle("active", b === btn));
-      document.querySelectorAll(".tab-content").forEach(panel => panel.classList.toggle("active", panel.dataset.tabContent === alvo));
+      document.querySelectorAll(".tab-content").forEach(p => p.classList.toggle("active", p.dataset.tabContent === alvo));
     });
   });
 
+  document.getElementById("btn-entrar-mesa").onclick = ()=>{
+    const id = document.getElementById("f-id-mesa").value.trim();
+    if(!id) return;
+    estado.idMesa = id;
+    escutarPersonagemRemoto();
+    render(); salvar();
+  };
+
+  document.getElementById("btn-sair-mesa").onclick = ()=>{
+    if(firebaseOk && estado.idMesa){
+      firebase.database().ref(`mesas/${estado.idMesa}/jogadores/${estado.id}`).remove().catch(()=>{});
+    }
+    if(pararEscutaMesa){ pararEscutaMesa(); pararEscutaMesa = null; }
+    estado.idMesa = null;
+    render(); salvar();
+  };
+
+  document.querySelectorAll(".dc-btn").forEach(btn=>{
+    btn.onclick = ()=>{
+      const vital = btn.dataset.vital;
+      const sinal = parseInt(btn.dataset.sinal,10);
+      const input = document.getElementById(vital === "pv" ? "v-pv-delta" : "v-prot-delta");
+      const qtd = Math.abs(parseInt(input.value,10) || 0);
+      if(vital === "pv") estado.recursos.pvAtual = Math.max(0, Math.min(estado.recursos.pvMaximo, estado.recursos.pvAtual + sinal*qtd));
+      else estado.recursos.protAtual = Math.max(0, Math.min(estado.recursos.protMaximo, estado.recursos.protAtual + sinal*qtd));
+      input.value = "";
+      render(); salvar();
+    };
+  });
+
+  document.getElementById("btn-export").onclick = ()=>{
+    const blob = new Blob([JSON.stringify(estado, null, 2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `ficha-caos-${(estado.identidade.nome||"personagem").toLowerCase()}.json`;
+    a.click();
+  };
+
+  document.getElementById("btn-import").onclick = ()=> document.getElementById("import-input").click();
+  document.getElementById("import-input").onchange = (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt)=>{
+      try {
+        estado = JSON.parse(evt.target.result);
+        render(); salvar();
+      } catch(err){ alert("Erro ao importar JSON."); }
+    };
+    reader.readAsText(file);
+  };
+
   render();
   salvar();
+  if(estado.idMesa) escutarPersonagemRemoto();
 })();
 </script>
 </body>
