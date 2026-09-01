@@ -144,6 +144,21 @@
   .actions{ position:sticky; bottom:0; display:flex; gap:10px; justify-content:flex-end; padding:14px 0 4px; }
   .mesa-panel{ padding:14px 20px; display:flex; align-items:center; }
   .mesa-form{ display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; width:100%; }
+
+  .personagem-card{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:10px 12px; }
+  .personagem-card.ativo{ border-color:var(--accent-arcane); background:rgba(155,107,242,0.08); }
+  .personagem-card-info{ flex:1; cursor:pointer; min-width:0; }
+  .personagem-card-nome{ font-family:var(--font-display); font-size:0.95rem; color:var(--text); }
+  .personagem-card-tag{ font-size:0.6rem; text-transform:uppercase; color:var(--accent-arcane); border:1px solid var(--accent-arcane); border-radius:4px; padding:1px 5px; margin-left:6px; }
+  .personagem-card-meta{ font-size:0.74rem; color:var(--text-faint); margin-top:2px; }
+  .personagem-card-excluir{ background:none; border:1px solid var(--border-soft); color:var(--text-faint); border-radius:5px; width:24px; height:24px; font-size:0.8rem; cursor:pointer; }
+  .personagem-card-excluir:hover{ border-color:var(--accent-ember); color:var(--accent-ember); }
+
+  .historico-item{ background:var(--bg-panel-alt); border:1px solid var(--border-soft); border-radius:8px; padding:10px 12px; display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .crop-panel{ max-width:360px; }
+  .crop-viewport{ width:260px; height:260px; border-radius:50%; overflow:hidden; position:relative; background:var(--bg-inset); border:2px solid var(--accent-arcane); margin:4px auto 0; cursor:grab; }
+  .crop-viewport.arrastando{ cursor:grabbing; }
+  .crop-viewport img{ position:absolute; top:50%; left:50%; max-width:none; pointer-events:none; user-select:none; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -163,7 +178,7 @@
     </div>
   </header>
 
-  <!-- Painel Conexão de Mesa -->
+  <!-- Painel de Conexão com a Mesa -->
   <section class="panel mesa-panel">
     <div class="mesa-form" id="mesa-form">
       <label class="field" style="width:240px;">ID da Mesa
@@ -177,7 +192,7 @@
     </div>
   </section>
 
-  <!-- Modais -->
+  <!-- Modal: Personagens -->
   <div class="modal-overlay" id="modal-personagens">
     <div class="modal-panel">
       <div class="modal-header"><h2 class="panel-title" style="margin:0">Personagens</h2><button class="modal-close" id="btn-fechar-modal">×</button></div>
@@ -186,6 +201,7 @@
     </div>
   </div>
 
+  <!-- Modal: Histórico de Rolagens -->
   <div class="modal-overlay" id="modal-historico">
     <div class="modal-panel">
       <div class="modal-header"><h2 class="panel-title" style="margin:0">Histórico de Rolagens</h2><button class="modal-close" id="btn-fechar-historico">×</button></div>
@@ -194,8 +210,9 @@
     </div>
   </div>
 
+  <!-- Modal: Recorte de Foto -->
   <div class="modal-overlay" id="modal-editar-foto">
-    <div class="modal-panel" style="max-width:360px;">
+    <div class="modal-panel crop-panel">
       <div class="modal-header"><h2 class="panel-title" style="margin:0">Editar Foto</h2><button class="modal-close" id="btn-fechar-crop">×</button></div>
       <div class="modal-body" style="align-items:center;">
         <div class="crop-viewport" id="crop-viewport"><img id="crop-image" alt=""></div>
@@ -205,8 +222,9 @@
     </div>
   </div>
 
-  <!-- Layout Principal -->
+  <!-- Grid Principal -->
   <div class="layout-grid">
+    <!-- Coluna Esquerda -->
     <div class="layout-col">
       <section class="panel">
         <div class="tabbar" id="tabbar">
@@ -240,13 +258,14 @@
             <div class="anotacoes-col" style="padding:0; overflow:hidden;">
               <input type="text" id="anotacao-titulo-input" class="anotacao-titulo-input" placeholder="Título da nota" style="display:none;">
               <textarea id="anotacao-conteudo-input" class="anotacao-conteudo-input" placeholder="Escreva aqui..." style="display:none;"></textarea>
-              <div class="tab-placeholder" id="anotacao-vazio" style="flex:1; display:flex; align-items:center; justify-content:center;">Selecione ou crie uma nota.</div>
+              <div class="tab-placeholder" id="anotacao-vazio" style="flex:1; display:flex; align-items:center; justify-content:center;">Selecione uma nota ao lado, ou crie uma nova.</div>
             </div>
           </div>
         </div>
       </section>
     </div>
 
+    <!-- Coluna Direita -->
     <div class="layout-col">
       <section class="panel">
         <h2 class="panel-title">Identidade</h2>
@@ -529,7 +548,6 @@
     }
   }
 
-  // Render Atributos
   function renderAtributos(){
     const grid = document.getElementById("attr-grid");
     grid.innerHTML = "";
@@ -566,7 +584,6 @@
     });
   }
 
-  // Render Perícias
   function renderPericias(cat, containerId){
     const container = document.getElementById(containerId);
     container.innerHTML = "";
@@ -608,7 +625,22 @@
     });
   }
 
-  // Render Inventário, Habilidades, Técnicas, Talentos
+  function renderOficio(){
+    const container = document.getElementById("pericias-oficio");
+    const nome = estado.identidade.oficio || "Nenhum ofício definido";
+    container.innerHTML = `
+      <div class="pericia-row">
+        <div class="pericia-nome">${nome}<span class="attrtag">sucesso automático</span></div>
+        <span></span><span></span>
+        <div class="formula">Automático</div>
+        <button class="roll-btn oficio" id="btn-testar-oficio" ${!estado.identidade.oficio ? "disabled" : ""}>Testar</button>
+      </div>`;
+    const btn = document.getElementById("btn-testar-oficio");
+    if(btn){
+      btn.onclick = ()=> mostrarResultado(nome, { sucessoAutomatico:true });
+    }
+  }
+
   let invForm = false, habForm = false, tecForm = false, talForm = false, ataForm = false;
 
   function renderInventario(){
@@ -654,7 +686,7 @@
           <span class="item-nome raridade-${item.raridade}">${item.nome}</span>
           <span class="item-peso">${item.peso}kg</span>
         </div>
-        ${item.aberta ? `<div class="item-body"><div class="item-raridade-tag">${item.raridade}</div><div class="item-desc-text">${item.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
+        ${item.aberta ? `<div class="item-body"><div class="item-raridade-tag raridade-${item.raridade}">${item.raridade}</div><div class="item-desc-text">${item.descricao||"Sem descrição."}</div><div class="item-footer-actions"><button class="item-action remover" data-del="${idx}">Remover</button></div></div>` : ""}`;
       card.querySelector(".item-header").onclick = ()=>{ item.aberta = !item.aberta; renderInventario(); };
       const del = card.querySelector("[data-del]");
       if(del) del.onclick = (e)=>{ e.stopPropagation(); estado.inventario.splice(idx,1); renderInventario(); salvar(); };
@@ -860,7 +892,6 @@
     });
   }
 
-  // Render Anotações
   let notaAtivaId = null;
   function renderAnotacoes(){
     const list = document.getElementById("anotacoes-lista");
@@ -908,6 +939,161 @@
     if(n){ n.conteudo = e.target.value; salvar(); }
   };
 
+  // Modais de Personagens e Histórico
+  function listarPersonagens(){
+    const lista = [];
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith(LOCALSTORAGE_PREFIX)){
+        try{
+          const d = JSON.parse(localStorage.getItem(k));
+          lista.push(d);
+        }catch(e){}
+      }
+    }
+    return lista.sort((a,b)=> (b.atualizadoEm||0) - (a.atualizadoEm||0));
+  }
+
+  function renderPersonagensModal(){
+    const list = document.getElementById("lista-personagens");
+    list.innerHTML = "";
+    const pers = listarPersonagens();
+    pers.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "personagem-card" + (p.id === estado.id ? " ativo" : "");
+      card.innerHTML = `
+        <div class="personagem-card-info">
+          <div class="personagem-card-nome">${p.identidade.nome || "Sem nome"}${p.id === estado.id ? '<span class="personagem-card-tag">Atual</span>':''}</div>
+          <div class="personagem-card-meta">${p.identidade.classe} — Nv. ${p.identidade.nivel}</div>
+        </div>
+        <button class="personagem-card-excluir">×</button>`;
+      card.querySelector(".personagem-card-info").onclick = ()=>{
+        estado = p; sessionStorage.setItem(SESSION_KEY, p.id);
+        document.getElementById("modal-personagens").classList.remove("aberto");
+        escutarPersonagemRemoto(); render(); salvar();
+      };
+      card.querySelector(".personagem-card-excluir").onclick = (e)=>{
+        e.stopPropagation();
+        if(confirm(`Excluir ${p.identidade.nome||"este personagem"}?`)){
+          localStorage.removeItem(LOCALSTORAGE_PREFIX + p.id);
+          if(p.id === estado.id){
+            estado = estadoPadrao();
+            sessionStorage.setItem(SESSION_KEY, estado.id);
+          }
+          renderPersonagensModal(); render(); salvar();
+        }
+      };
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("btn-personagens").onclick = ()=>{
+    renderPersonagensModal();
+    document.getElementById("modal-personagens").classList.add("aberto");
+  };
+  document.getElementById("btn-fechar-modal").onclick = ()=> document.getElementById("modal-personagens").classList.remove("aberto");
+  document.getElementById("btn-novo-personagem").onclick = ()=>{
+    estado = estadoPadrao();
+    sessionStorage.setItem(SESSION_KEY, estado.id);
+    document.getElementById("modal-personagens").classList.remove("aberto");
+    escutarPersonagemRemoto(); render(); salvar();
+  };
+
+  document.getElementById("btn-historico").onclick = ()=>{
+    const list = document.getElementById("lista-historico");
+    list.innerHTML = "";
+    (estado.historicoRolagens||[]).forEach(h => {
+      const item = document.createElement("div");
+      item.className = "historico-item";
+      item.innerHTML = `<div style="flex:1;"><div><b>${h.nome}</b>: ${h.formula}</div><div style="font-size:0.75rem; color:var(--text-faint);">${h.detalhe} (${h.hora})</div></div><div style="font-size:1.2rem; font-family:var(--font-display); color:var(--accent-gold);">${h.total}</div>`;
+      list.appendChild(item);
+    });
+    document.getElementById("modal-historico").classList.add("aberto");
+  };
+  document.getElementById("btn-fechar-historico").onclick = ()=> document.getElementById("modal-historico").classList.remove("aberto");
+  document.getElementById("btn-limpar-historico").onclick = ()=>{
+    estado.historicoRolagens = [];
+    document.getElementById("lista-historico").innerHTML = "";
+    salvar();
+  };
+
+  // Foto / Avatar com Crop
+  let cropImg = null, cropScale = 1, cropMinScale = 1, cropOffX = 0, cropOffY = 0, arrastando = false, arrStart = {x:0, y:0, ox:0, oy:0};
+  const CROP_VIEWPORT = 260;
+
+  function abrirModalCrop(dataUrl){
+    const img = new Image();
+    img.onload = ()=>{
+      cropImg = img;
+      cropMinScale = Math.max(CROP_VIEWPORT / img.naturalWidth, CROP_VIEWPORT / img.naturalHeight);
+      cropScale = cropMinScale;
+      cropOffX = 0; cropOffY = 0;
+      const el = document.getElementById("crop-image");
+      el.src = dataUrl;
+      el.style.width = img.naturalWidth + "px";
+      el.style.height = img.naturalHeight + "px";
+      document.getElementById("crop-zoom-slider").value = 100;
+      atualizarTransformCrop();
+      document.getElementById("modal-editar-foto").classList.add("aberto");
+    };
+    img.src = dataUrl;
+  }
+
+  function atualizarTransformCrop(){
+    document.getElementById("crop-image").style.transform = `translate(-50%, -50%) translate(${cropOffX}px, ${cropOffY}px) scale(${cropScale})`;
+  }
+
+  const cropVp = document.getElementById("crop-viewport");
+  cropVp.onpointerdown = (e)=>{
+    if(!cropImg) return;
+    arrastando = true; cropVp.classList.add("arrastando");
+    cropVp.setPointerCapture(e.pointerId);
+    arrStart = { x: e.clientX, y: e.clientY, ox: cropOffX, oy: cropOffY };
+  };
+  cropVp.onpointermove = (e)=>{
+    if(!arrastando) return;
+    cropOffX = arrStart.ox + (e.clientX - arrStart.x);
+    cropOffY = arrStart.oy + (e.clientY - arrStart.y);
+    atualizarTransformCrop();
+  };
+  cropVp.onpointerup = ()=>{ arrastando = false; cropVp.classList.remove("arrastando"); };
+
+  document.getElementById("crop-zoom-slider").oninput = (e)=>{
+    if(!cropImg) return;
+    cropScale = cropMinScale * (parseInt(e.target.value,10)/100);
+    atualizarTransformCrop();
+  };
+
+  document.getElementById("btn-fechar-crop").onclick = ()=> document.getElementById("modal-editar-foto").classList.remove("aberto");
+  document.getElementById("btn-aplicar-crop").onclick = ()=>{
+    if(!cropImg) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 360; canvas.height = 360;
+    const ctx = canvas.getContext("2d");
+    const ratio = 360 / CROP_VIEWPORT;
+    ctx.translate(180 + cropOffX*ratio, 180 + cropOffY*ratio);
+    ctx.scale(cropScale*ratio, cropScale*ratio);
+    ctx.drawImage(cropImg, -cropImg.naturalWidth/2, -cropImg.naturalHeight/2);
+    estado.identidade.foto = canvas.toDataURL("image/jpeg", 0.85);
+    document.getElementById("modal-editar-foto").classList.remove("aberto");
+    render(); salvar();
+  };
+
+  document.getElementById("avatar-circle").onclick = ()=> document.getElementById("avatar-input").click();
+  document.getElementById("avatar-input").onchange = (e)=>{
+    const f = e.target.files[0];
+    if(f){
+      const r = new FileReader();
+      r.onload = (evt)=> abrirModalCrop(evt.target.result);
+      r.readAsDataURL(f);
+    }
+  };
+  document.getElementById("avatar-remove").onclick = (e)=>{
+    e.stopPropagation();
+    estado.identidade.foto = null;
+    render(); salvar();
+  };
+
   // Render Geral
   function render(){
     if(estado.idMesa){
@@ -929,6 +1115,16 @@
     document.getElementById("f-cansaco").value = estado.identidade.cansaco || 0;
     document.getElementById("f-exaustao").value = estado.identidade.exaustao || 0;
 
+    const img = document.getElementById("avatar-img");
+    const ph = document.getElementById("avatar-placeholder");
+    const rm = document.getElementById("avatar-remove");
+    if(estado.identidade.foto){
+      img.src = estado.identidade.foto; img.style.display = "block";
+      ph.style.display = "none"; rm.style.display = "inline";
+    } else {
+      img.style.display = "none"; ph.style.display = "block"; rm.style.display = "none";
+    }
+
     const r = estado.recursos || { pvAtual:10, pvMaximo:10, protAtual:0, protMaximo:0, dt:"16", deslocamento:"10m" };
     document.getElementById("v-pv-atual").value = r.pvAtual;
     document.getElementById("v-pv-max").value = r.pvMaximo;
@@ -942,6 +1138,7 @@
     renderAtributos();
     renderPericias("fisicas", "pericias-fisicas");
     renderPericias("mentais", "pericias-mentais");
+    renderOficio();
     renderInventario();
     renderHabilidades();
     renderTecnicas();
@@ -951,12 +1148,36 @@
     atualizarIndicadorConexao();
   }
 
-  // Event Listeners Básicos
   ["f-nome","f-classe","f-subclasse","f-antecedente","f-oficio","f-nivel","f-proficiencia","f-cansaco","f-exaustao"].forEach(id=>{
     document.getElementById(id).addEventListener("input", (e)=>{
       estado.identidade[id.replace("f-","")] = e.target.value;
       salvar();
     });
+  });
+
+  document.querySelectorAll("[data-nivel-step]").forEach(btn=>{
+    btn.onclick = ()=>{
+      estado.identidade.nivel = Math.max(1, Math.min(20, (parseInt(estado.identidade.nivel,10)||1) + parseInt(btn.dataset.nivelStep,10)));
+      render(); salvar();
+    };
+  });
+  document.querySelectorAll("[data-prof-step]").forEach(btn=>{
+    btn.onclick = ()=>{
+      estado.identidade.proficiencia = Math.max(0, Math.min(20, (parseInt(estado.identidade.proficiencia,10)||0) + parseInt(btn.dataset.profStep,10)));
+      render(); salvar();
+    };
+  });
+  document.querySelectorAll("[data-cansaco-step]").forEach(btn=>{
+    btn.onclick = ()=>{
+      estado.identidade.cansaco = Math.max(0, (parseInt(estado.identidade.cansaco,10)||0) + parseInt(btn.dataset.cansacoStep,10));
+      render(); salvar();
+    };
+  });
+  document.querySelectorAll("[data-exaustao-step]").forEach(btn=>{
+    btn.onclick = ()=>{
+      estado.identidade.exaustao = Math.max(0, (parseInt(estado.identidade.exaustao,10)||0) + parseInt(btn.dataset.exaustaoStep,10));
+      render(); salvar();
+    };
   });
 
   document.querySelectorAll("#tabbar .tab-btn").forEach(btn=>{
@@ -966,6 +1187,18 @@
       document.querySelectorAll(".tab-content").forEach(p => p.classList.toggle("active", p.dataset.tabContent === alvo));
     });
   });
+
+  document.getElementById("btn-modo-atributo").onclick = ()=>{
+    modoAtributoTemporario = !modoAtributoTemporario;
+    document.getElementById("btn-modo-atributo").dataset.modo = modoAtributoTemporario ? "temporario" : "permanente";
+    document.getElementById("btn-modo-atributo").textContent = modoAtributoTemporario ? "Modo: Temporário" : "Modo: Permanente";
+    document.getElementById("btn-limpar-temp").style.display = modoAtributoTemporario ? "inline" : "none";
+    renderAtributos();
+  };
+  document.getElementById("btn-limpar-temp").onclick = ()=>{
+    ATRIBUTOS_DEF.forEach(d => { if(estado.atributos[d.chave]) estado.atributos[d.chave].modTemp = 0; });
+    renderAtributos(); salvar();
+  };
 
   document.getElementById("btn-entrar-mesa").onclick = ()=>{
     const id = document.getElementById("f-id-mesa").value.trim();
@@ -997,6 +1230,13 @@
     };
   });
 
+  document.getElementById("v-pv-atual").onchange = (e)=> { estado.recursos.pvAtual = parseInt(e.target.value,10)||0; render(); salvar(); };
+  document.getElementById("v-pv-max").onchange = (e)=> { estado.recursos.pvMaximo = parseInt(e.target.value,10)||0; render(); salvar(); };
+  document.getElementById("v-prot-atual").onchange = (e)=> { estado.recursos.protAtual = parseInt(e.target.value,10)||0; render(); salvar(); };
+  document.getElementById("v-prot-max").onchange = (e)=> { estado.recursos.protMaximo = parseInt(e.target.value,10)||0; render(); salvar(); };
+  document.getElementById("v-dt").oninput = (e)=> { estado.recursos.dt = e.target.value; salvar(); };
+  document.getElementById("v-desloc-input").oninput = (e)=> { estado.recursos.deslocamento = e.target.value; salvar(); };
+
   document.getElementById("btn-export").onclick = ()=>{
     const blob = new Blob([JSON.stringify(estado, null, 2)], { type:"application/json" });
     const a = document.createElement("a");
@@ -1017,6 +1257,15 @@
       } catch(err){ alert("Erro ao importar JSON."); }
     };
     reader.readAsText(file);
+  };
+
+  document.getElementById("btn-reset").onclick = ()=>{
+    if(confirm("Zerar todos os dados do personagem atual?")){
+      const id = estado.id;
+      estado = estadoPadrao();
+      estado.id = id;
+      render(); salvar();
+    }
   };
 
   render();
